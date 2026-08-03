@@ -68,14 +68,6 @@ class Elevator(AggregateRoot[DomainEvent, ElevatorId]):
                 tick=tick,
             )
         )
-        elevator.raise_event(
-            ElevatorPositionRecorded(
-                elevator_id=elevator_id,
-                floor=starting_floor,
-                direction=Direction.IDLE,
-                tick=tick,
-            )
-        )
         return elevator
 
     def schedule_stop(
