@@ -16,7 +16,9 @@ def test_get_on_unknown_elevator_raises_aggregate_not_found() -> None:
 
 def test_save_then_get_reconstructs_the_same_state() -> None:
     repository = EventSourcedElevatorRepository(InMemoryEventStore())
-    elevator = Elevator.provision(ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0))
+    elevator = Elevator.provision(
+        ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0)
+    )
     elevator.schedule_stop(PassengerId("p1"), Floor(2), Floor(5), Tick(0))
 
     repository.save(elevator)
@@ -29,7 +31,9 @@ def test_save_then_get_reconstructs_the_same_state() -> None:
 
 def test_save_clears_uncommitted_events() -> None:
     repository = EventSourcedElevatorRepository(InMemoryEventStore())
-    elevator = Elevator.provision(ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0))
+    elevator = Elevator.provision(
+        ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0)
+    )
 
     repository.save(elevator)
 
@@ -39,7 +43,9 @@ def test_save_clears_uncommitted_events() -> None:
 def test_incremental_saves_accumulate_in_the_stream() -> None:
     store = InMemoryEventStore()
     repository = EventSourcedElevatorRepository(store)
-    elevator = Elevator.provision(ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0))
+    elevator = Elevator.provision(
+        ElevatorId(0), capacity=4, num_floors=10, starting_floor=Floor(0), tick=Tick(0)
+    )
     repository.save(elevator)
 
     elevator.advance(Tick(1))

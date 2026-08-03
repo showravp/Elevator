@@ -1,6 +1,10 @@
 from domain.aggregate_root import AggregateRoot
 from domain.events import DomainEvent, RequestAssigned, RequestSubmitted
-from domain.exceptions import DuplicateAssignmentException, InvalidFloorException, SameFloorRequestException
+from domain.exceptions import (
+    DuplicateAssignmentException,
+    InvalidFloorException,
+    SameFloorRequestException,
+)
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 
 
@@ -69,9 +73,7 @@ class Request(AggregateRoot[DomainEvent, PassengerId]):
                 f"passenger {self._id.value} is already assigned to elevator "
                 f"{self._assigned_elevator_id.value}"  # type: ignore[union-attr]
             )
-        self.raise_event(
-            RequestAssigned(passenger_id=self._id, elevator_id=elevator_id, tick=tick)
-        )
+        self.raise_event(RequestAssigned(passenger_id=self._id, elevator_id=elevator_id, tick=tick))
 
     def apply(self, event: DomainEvent) -> None:
         match event:

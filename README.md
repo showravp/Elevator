@@ -10,8 +10,9 @@ stats output).
 
 Status: core simulation and REST API are built and tested end-to-end — domain layer,
 event-sourcing infrastructure (store, outbox, repositories, dispatch process manager,
-projections, orchestrator), DI composition root, and a FastAPI service exposing it. See
-[CLAUDE.md](CLAUDE.md) for the full architecture and build sequence.
+projections, orchestrator), DI composition root, and a FastAPI service exposing it.
+`pyright --strict` and `ruff` both pass with zero errors — see [CLAUDE.md](CLAUDE.md) for
+the full architecture and build sequence.
 
 ## Project layout
 
@@ -73,6 +74,13 @@ the actual FastAPI app via `TestClient`:
 pytest
 ```
 
+Type checking and lint — strict mode, zero `Any` in the codebase:
+
+```bash
+pyright
+ruff check .
+```
+
 ## Time spent
 
 TBD — tracked as the project progresses, filled in before final submission.
@@ -92,6 +100,12 @@ TBD — tracked as the project progresses, filled in before final submission.
 - **A request with no available elevator is deferred, not retried on a fixed timer.** The
   dispatch process manager keeps it pending and retries whenever any elevator's occupancy
   changes (a passenger drops off), which is the only event that can free capacity.
+- **`None` is fine for aggregate/lifecycle state, not for services.** `Request` not yet
+  being assigned an elevator, or a run not yet having failed, are legitimate `X | None`
+  facts about that object's own state — mypy/pyright fully verify them, and they're never
+  ambiguous about what they mean. A *service* returning a bare `Optional` is a different
+  problem (the type alone doesn't say why), so `ISchedulingPolicy.select_elevator()`
+  returns an explicit `ElevatorAssigned | NoElevatorAvailable` instead of `Elevator | None`.
 - **CQRS is "lite" and event sourcing is real, but both scoped to a single in-process run.**
   No message broker, no eventual consistency — command handlers and the outbox relay run
   synchronously. See `CLAUDE.md` for the fuller rationale.

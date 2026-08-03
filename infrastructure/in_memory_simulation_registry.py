@@ -18,4 +18,6 @@ class InMemorySimulationRegistry(ISimulationRegistry):
         try:
             return self._runs[run_id]
         except KeyError:
-            raise SimulationRunNotFoundException(f"simulation run {run_id.value} not found") from None
+            raise SimulationRunNotFoundException(
+                f"simulation run {run_id.value} not found"
+            ) from None

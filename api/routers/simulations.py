@@ -11,7 +11,11 @@ from api.schemas import (
 from application.commands import ExecuteSimulationRunCommand
 from application.handlers.query import GetSimulationStatusHandler
 from application.ports import ISimulationRegistry
-from application.queries import GetPassengerStatsQuery, GetPositionLogQuery, GetSimulationStatusQuery
+from application.queries import (
+    GetPassengerStatsQuery,
+    GetPositionLogQuery,
+    GetSimulationStatusQuery,
+)
 from application.raw_request import RawRequest
 from application.simulation_run_id import SimulationRunId
 from composition.run_scope import RunScope

@@ -11,5 +11,4 @@ class IRequestSource(ABC):
         for a tick ahead of the simulation's current position — that would be peeking ahead."""
 
     @abstractmethod
-    def has_more(self) -> bool:
-        ...
+    def has_more(self) -> bool: ...

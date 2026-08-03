@@ -1,7 +1,7 @@
 from application.ports import IEventBus
 from application.repositories import IElevatorRepository, IRequestRepository
 from domain.events import PassengerDroppedOff, RequestSubmitted
-from domain.services import ISchedulingPolicy
+from domain.services import ElevatorAssigned, ISchedulingPolicy, NoElevatorAvailable
 from domain.value_objects import PassengerId, Tick
 
 
@@ -43,12 +43,14 @@ class DispatchProcessManager:
         still_pending: list[PassengerId] = []
         for passenger_id in self._pending_passenger_ids:
             request = self._request_repository.get(passenger_id)
-            elevator = self._scheduling_policy.select_elevator(request, elevators)
-            if elevator is None:
-                still_pending.append(passenger_id)
-                continue
-            elevator.schedule_stop(passenger_id, request.source, request.destination, tick)
-            self._elevator_repository.save(elevator)
-            request.assign(elevator.id, tick)
-            self._request_repository.save(request)
+            outcome = self._scheduling_policy.select_elevator(request, elevators)
+            match outcome:
+                case NoElevatorAvailable():
+                    still_pending.append(passenger_id)
+                    continue
+                case ElevatorAssigned(elevator=elevator):
+                    elevator.schedule_stop(passenger_id, request.source, request.destination, tick)
+                    self._elevator_repository.save(elevator)
+                    request.assign(elevator.id, tick)
+                    self._request_repository.save(request)
         self._pending_passenger_ids = still_pending

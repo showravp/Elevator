@@ -1,6 +1,8 @@
 from application.commands import ExecuteSimulationRunCommand
 from application.handlers.command import ExecuteSimulationRunHandler
+from application.ports import IOrchestrator, IPassengerStatsFileWriter, IPositionLogFileWriter
 from application.read_models import PassengerStatsSummary, PositionLogRow
+from application.repositories import IPassengerStatsRepository, IPositionLogRepository
 from application.simulation_run import SimulationRun
 from application.simulation_run_id import SimulationRunId
 from application.simulation_status import SimulationStatus
@@ -10,6 +12,9 @@ _EMPTY_SUMMARY = PassengerStatsSummary(0, 0, 0, 0, 0.0, 0, 0, 0.0)
 
 
 class _StubOrchestrator:
+    """No inheritance needed — IOrchestrator is a Protocol, satisfied structurally by
+    having a matching run() method."""
+
     def __init__(self, raise_error: Exception | None = None) -> None:
         self._raise_error = raise_error
         self.ran = False
@@ -20,17 +25,17 @@ class _StubOrchestrator:
             raise self._raise_error
 
 
-class _StubPositionLogRepository:
+class _StubPositionLogRepository(IPositionLogRepository):
     def get_rows(self) -> list[PositionLogRow]:
         return []
 
 
-class _StubPassengerStatsRepository:
+class _StubPassengerStatsRepository(IPassengerStatsRepository):
     def get_summary(self) -> PassengerStatsSummary:
         return _EMPTY_SUMMARY
 
 
-class _RecordingFileWriter:
+class _RecordingFileWriter(IPositionLogFileWriter, IPassengerStatsFileWriter):
     def __init__(self, raise_error: Exception | None = None) -> None:
         self._raise_error = raise_error
         self.written_with: object | None = None
@@ -43,7 +48,7 @@ class _RecordingFileWriter:
 
 
 def _build_handler(
-    orchestrator: _StubOrchestrator,
+    orchestrator: IOrchestrator,
     registry: InMemorySimulationRegistry,
     position_log_file_writer: _RecordingFileWriter | None = None,
     passenger_stats_file_writer: _RecordingFileWriter | None = None,

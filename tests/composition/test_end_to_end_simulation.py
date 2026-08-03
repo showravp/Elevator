@@ -68,9 +68,13 @@ def test_position_log_has_a_row_for_every_elevator_at_every_tick_up_to_completio
     for tick_value in range(last_tick + 1):
         for elevator_id in (ElevatorId(0), ElevatorId(1)):
             matching = [
-                row for row in rows if row.tick.value == tick_value and row.elevator_id == elevator_id
+                row
+                for row in rows
+                if row.tick.value == tick_value and row.elevator_id == elevator_id
             ]
-            assert len(matching) == 1, f"missing/duplicate row for elevator {elevator_id} at tick {tick_value}"
+            assert len(matching) == 1, (
+                f"missing/duplicate row for elevator {elevator_id} at tick {tick_value}"
+            )
 
 
 def test_requests_exceeding_a_single_elevators_capacity_are_all_eventually_served() -> None:
