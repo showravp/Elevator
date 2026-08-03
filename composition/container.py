@@ -19,10 +19,14 @@ def build_application(
             "elevator_capacity": elevator_capacity,
         }
     )
-    # Event-bus subscribers with no other consumer (process manager, projections) are
-    # otherwise never instantiated by the graph, so resolve them explicitly here to
-    # trigger their __init__ subscription before the orchestrator starts publishing.
+    # Event-bus subscribers must exist before the orchestrator starts publishing, so they
+    # can't wait for lazy resolution on first use. passenger_stats_projection is also a
+    # real constructor dependency of `orchestrator` (via the port) and would resolve
+    # anyway, but resolving it here too keeps this list exhaustive and independent of
+    # that wiring detail ever changing. dispatch_process_manager and
+    # position_log_projection have no upstream consumer at all, so they rely on this
+    # entirely.
     container.dispatch_process_manager()
-    container.position_log_projection()
-    container.passenger_stats_projection()
+    container.infrastructure.position_log_projection()
+    container.infrastructure.passenger_stats_projection()
     return container

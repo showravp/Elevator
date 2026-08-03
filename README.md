@@ -10,19 +10,45 @@ stats output).
 
 Status: core simulation and REST API are built and tested end-to-end — domain layer,
 event-sourcing infrastructure (store, outbox, repositories, dispatch process manager,
-projections, orchestrator), DI composition root, and a FastAPI service exposing it. See
-[CLAUDE.md](CLAUDE.md) for the architecture and build sequence.
+projections, orchestrator), DI composition root, and a FastAPI service exposing it. The
+repository pattern is applied consistently on both sides of CQRS (see below) — audited and
+fixed in a dedicated pass, not just assumed. See [CLAUDE.md](CLAUDE.md) for the full
+architecture and build sequence.
 
 ## Project layout
 
 ```
 domain/          Elevator/Request aggregates, value objects, events, SchedulingPolicy — no I/O
-application/     commands, queries, handlers, process manager, projections, ports, orchestrator
-infrastructure/  in-memory event store/bus/registry, event-sourced repositories, request source
+application/     commands, queries, handlers, process manager, read models, repository
+                 interfaces (write and read side), ports, orchestrator
+infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
+                 projections (event-driven read-model writers) — swappable for a real DB
 composition/     DI container + per-layer registration modules (dependency-injector)
 api/             FastAPI app, routers, pydantic schemas — the only presentation layer
 tests/           mirrors the tree above
 ```
+
+## Persistence and the repository pattern
+
+Everything is in-memory today, but every access to it — write and read — goes through a
+repository interface defined in `application/`, never a concrete storage class. The
+concrete classes live in `infrastructure/` and are the only pieces that would need to
+change if this ran against a real database (e.g. an ORM) instead:
+
+| Port (`application/`) | In-memory adapter (`infrastructure/`) | Backs |
+|---|---|---|
+| `ElevatorRepository` | `EventSourcedElevatorRepository` | write side — `Elevator` aggregate |
+| `RequestRepository` | `EventSourcedRequestRepository` | write side — `Request` aggregate |
+| `EventStore` / `OutboxStore` | `InMemoryEventStore` | the append-only log both repositories above replay from |
+| `PositionLogRepository` | `PositionLogProjection` | read side — required output 1 |
+| `PassengerStatsRepository` | `PassengerStatsProjection` | read side — required output 2 |
+| `SimulationRegistry` | `InMemorySimulationRegistry` | run status tracking (Pending/Running/Completed/Failed) |
+
+Command handlers, query handlers, `DispatchProcessManager`, and `SimulationOrchestrator`
+all depend only on the left column. `api/` itself never imports `infrastructure` directly
+either — even the one process-wide `SimulationRegistry` gets constructed in
+`composition/api_bootstrap.py`, not in `api/app.py`. Every adapter in the right column has
+its own test suite under `tests/infrastructure/`, mirroring this table 1:1.
 
 ## How to run
 
@@ -63,7 +89,10 @@ Simulations run in-memory in milliseconds, so by the time you poll, `status` is 
 always already `completed`. Run status lives only for the life of the server process — see
 "What I'd improve with more time."
 
-Test suite:
+Test suite — `tests/` mirrors the source tree exactly: `tests/infrastructure/` covers
+every persistence adapter (one test file per class, 1:1 with the table above),
+`tests/domain/` is pure unit tests with no I/O, `tests/api/` drives the actual FastAPI app
+via `TestClient`:
 
 ```bash
 pytest

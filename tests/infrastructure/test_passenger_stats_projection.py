@@ -1,7 +1,7 @@
-from application.projections import PassengerStatsProjection
 from domain.events import PassengerDroppedOff, PassengerPickedUp, RequestSubmitted
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 from infrastructure.in_memory_event_bus import InMemoryEventBus
+from infrastructure.passenger_stats_projection import PassengerStatsProjection
 
 
 def test_summary_computes_wait_and_total_time_for_completed_trips_only() -> None:
@@ -24,7 +24,7 @@ def test_summary_computes_wait_and_total_time_for_completed_trips_only() -> None
         RequestSubmitted(passenger_id=PassengerId("p2"), source=Floor(0), destination=Floor(5), tick=Tick(3))
     )
 
-    summary = projection.summary()
+    summary = projection.get_summary()
 
     assert summary.completed_count == 1
     assert summary.still_in_progress_count == 1
@@ -39,7 +39,7 @@ def test_summary_computes_wait_and_total_time_for_completed_trips_only() -> None
 def test_summary_with_no_events_is_all_zero() -> None:
     projection = PassengerStatsProjection(InMemoryEventBus())
 
-    summary = projection.summary()
+    summary = projection.get_summary()
 
     assert summary.completed_count == 0
     assert summary.still_in_progress_count == 0

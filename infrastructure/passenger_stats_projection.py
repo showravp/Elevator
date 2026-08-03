@@ -1,11 +1,15 @@
 from application.ports import EventBus
-from application.projections.passenger_stats_summary import PassengerStatsSummary
-from application.projections.passenger_timing import PassengerTiming
+from application.read_models import PassengerStatsSummary, PassengerTiming
+from application.repositories import PassengerStatsRepository
 from domain.events import PassengerDroppedOff, PassengerPickedUp, RequestSubmitted
 from domain.value_objects import PassengerId, Tick
 
 
-class PassengerStatsProjection:
+class PassengerStatsProjection(PassengerStatsRepository):
+    """Same seam as PositionLogProjection: in-memory today, but callers depend on
+    PassengerStatsRepository, so a SQL-backed implementation could replace this without
+    touching the orchestrator or the query handler."""
+
     def __init__(self, event_bus: EventBus) -> None:
         self._submitted_at: dict[PassengerId, Tick] = {}
         self._picked_up_at: dict[PassengerId, Tick] = {}
@@ -23,8 +27,7 @@ class PassengerStatsProjection:
     def _on_dropped_off(self, event: PassengerDroppedOff) -> None:
         self._dropped_off_at[event.passenger_id] = event.tick
 
-    @property
-    def timings(self) -> list[PassengerTiming]:
+    def _timings(self) -> list[PassengerTiming]:
         return [
             PassengerTiming(
                 passenger_id=passenger_id,
@@ -35,8 +38,8 @@ class PassengerStatsProjection:
             for passenger_id, submitted_at in self._submitted_at.items()
         ]
 
-    def summary(self) -> PassengerStatsSummary:
-        timings = self.timings
+    def get_summary(self) -> PassengerStatsSummary:
+        timings = self._timings()
         completed = [timing for timing in timings if timing.total_time is not None]
         still_in_progress_count = len(timings) - len(completed)
         if not completed:

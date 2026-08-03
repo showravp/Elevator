@@ -1,8 +1,7 @@
 from application.exceptions import SimulationDidNotConvergeError
 from application.outbox_relay import OutboxRelay
-from application.projections import PassengerStatsProjection
 from application.ports import RequestSource
-from application.repositories import ElevatorRepository, RequestRepository
+from application.repositories import ElevatorRepository, PassengerStatsRepository, RequestRepository
 from domain.aggregates import Elevator, Request
 from domain.value_objects import ElevatorId, Floor, Tick
 
@@ -14,7 +13,7 @@ class SimulationOrchestrator:
         elevator_repository: ElevatorRepository,
         request_repository: RequestRepository,
         outbox_relay: OutboxRelay,
-        passenger_stats_projection: PassengerStatsProjection,
+        passenger_stats_repository: PassengerStatsRepository,
         num_elevators: int,
         num_floors: int,
         elevator_capacity: int,
@@ -24,7 +23,7 @@ class SimulationOrchestrator:
         self._elevator_repository = elevator_repository
         self._request_repository = request_repository
         self._outbox_relay = outbox_relay
-        self._passenger_stats_projection = passenger_stats_projection
+        self._passenger_stats_repository = passenger_stats_repository
         self._num_elevators = num_elevators
         self._num_floors = num_floors
         self._elevator_capacity = elevator_capacity
@@ -79,5 +78,5 @@ class SimulationOrchestrator:
     def _has_unfinished_work(self) -> bool:
         return (
             self._request_source.has_more()
-            or self._passenger_stats_projection.summary().still_in_progress_count > 0
+            or self._passenger_stats_repository.get_summary().still_in_progress_count > 0
         )

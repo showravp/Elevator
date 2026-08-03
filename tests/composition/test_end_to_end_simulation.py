@@ -1,3 +1,4 @@
+from application.queries import GetPassengerStatsQuery, GetPositionLogQuery
 from application.raw_request import RawRequest
 from composition.container import build_application
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
@@ -33,7 +34,7 @@ def test_simulation_serves_every_passenger_and_computes_sane_stats() -> None:
     app = _build(requests, num_elevators=2, num_floors=10, elevator_capacity=4)
     app.orchestrator().run()
 
-    summary = app.passenger_stats_projection().summary()
+    summary = app.passenger_stats_query_handler().handle(GetPassengerStatsQuery())
     assert summary.completed_count == 3
     assert summary.still_in_progress_count == 0
     assert summary.min_wait_time >= 0
@@ -46,7 +47,7 @@ def test_position_log_has_a_row_for_every_elevator_at_every_tick_up_to_completio
     app = _build(requests, num_elevators=2, num_floors=10, elevator_capacity=4)
     app.orchestrator().run()
 
-    rows = app.position_log_projection().rows
+    rows = app.position_log_query_handler().handle(GetPositionLogQuery())
     last_tick = max(row.tick.value for row in rows)
     for tick_value in range(last_tick + 1):
         for elevator_id in (ElevatorId(0), ElevatorId(1)):
@@ -64,7 +65,7 @@ def test_requests_exceeding_a_single_elevators_capacity_are_all_eventually_serve
     app = _build(requests, num_elevators=1, num_floors=10, elevator_capacity=1)
     app.orchestrator().run()
 
-    summary = app.passenger_stats_projection().summary()
+    summary = app.passenger_stats_query_handler().handle(GetPassengerStatsQuery())
     assert summary.completed_count == 5
     assert summary.still_in_progress_count == 0
 
@@ -74,6 +75,6 @@ def test_no_requests_still_records_tick_zero_for_every_idle_elevator() -> None:
 
     app.orchestrator().run()
 
-    rows = app.position_log_projection().rows
+    rows = app.position_log_query_handler().handle(GetPositionLogQuery())
     assert len(rows) == 2  # one tick-0 row per elevator, both idle at the starting floor
     assert all(row.tick == Tick(0) for row in rows)
