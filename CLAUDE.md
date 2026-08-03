@@ -41,9 +41,16 @@ for the follow-up presentation — not because the problem size alone demands it
   no partial-tick projection state.
 - **Cross-aggregate coordination**: `DispatchProcessManager` reacts to `RequestSubmitted`,
   runs `ISchedulingPolicy`, then issues commands against both `Elevator` and `Request`.
-- **Presentation**: REST API only (FastAPI), no CLI. `POST /simulations` is async —
-  returns `202 {id, status}` via `BackgroundTasks`, results polled via `GET /simulations/{id}`
-  and `GET /simulations/{id}/position-log` | `/passenger-stats`. Each run gets an isolated
+- **Presentation**: REST API only (FastAPI), no CLI. Configuration and passenger requests
+  are separate resources under `/simulation-runs`: `POST /simulation-runs` creates a run
+  from a config body (`201 {run_id, status}`), `PUT /simulation-runs/{run_id}/config`
+  updates it (`409` once requests are submitted), `POST /simulation-runs/{run_id}/requests`
+  submits the request batch and is what actually starts the run (`202`, async via
+  `BackgroundTasks`; `409` if already submitted). Results polled via
+  `GET /simulation-runs/{run_id}` and `GET /simulation-runs/{run_id}/position-log` |
+  `/passenger-stats`. Config is persisted through `IConfigRepository`
+  (`CsvConfigRepository`), with `config.csv` as the actual source of truth for whether a run
+  is configured — not an in-memory flag. Each run gets an isolated
   `IEventStore`/`IEventBus`/repositories/read models via a DI child scope, keyed in an
   in-memory `ISimulationRegistry` (does not persist across server restarts).
 - **DI**: `dependency-injector` library, used *only* in `composition/` — one registration

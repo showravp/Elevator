@@ -2,6 +2,6 @@ from pydantic import BaseModel
 
 
 class SimulationStatusResponse(BaseModel):
-    id: str
+    run_id: str
     status: str
     error_message: str | None = None

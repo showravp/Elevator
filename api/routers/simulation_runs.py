@@ -28,7 +28,7 @@ from application.simulation_status import SimulationStatus
 from composition.run_scope import RunScope
 from domain.value_objects import Floor, PassengerId, Tick
 
-router = APIRouter(prefix="/simulations", tags=["simulations"])
+router = APIRouter(prefix="/simulation-runs", tags=["simulation-runs"])
 
 
 def _to_config(body: SimulationConfigBody) -> SimulationConfig:
@@ -40,14 +40,14 @@ def _to_config(body: SimulationConfigBody) -> SimulationConfig:
 
 
 @router.post("", response_model=SimulationStatusResponse, status_code=201)
-def create_simulation(
+def create_simulation_run(
     body: SimulationConfigBody,
     registry: ISimulationRegistry = Depends(get_simulation_registry),
     run_scope: RunScope = Depends(get_run_scope),
 ) -> SimulationStatusResponse:
     run_id = run_scope.create_run(_to_config(body))
     run = registry.get(run_id)
-    return SimulationStatusResponse(id=run.id.value, status=run.status.value)
+    return SimulationStatusResponse(run_id=run.id.value, status=run.status.value)
 
 
 @router.put("/{run_id}/config", response_model=SimulationStatusResponse)
@@ -65,7 +65,7 @@ def update_config(
             f"(status={run.status.value}) — config can no longer be changed"
         )
     run_scope.update_config(parsed_id, _to_config(body))
-    return SimulationStatusResponse(id=run.id.value, status=run.status.value)
+    return SimulationStatusResponse(run_id=run.id.value, status=run.status.value)
 
 
 @router.post("/{run_id}/requests", response_model=SimulationStatusResponse, status_code=202)
@@ -99,7 +99,7 @@ def submit_requests(
     background_tasks.add_task(
         container.execute_run_handler().handle, ExecuteSimulationRunCommand(parsed_id)
     )
-    return SimulationStatusResponse(id=run.id.value, status=run.status.value)
+    return SimulationStatusResponse(run_id=run.id.value, status=run.status.value)
 
 
 @router.get("/{run_id}", response_model=SimulationStatusResponse)
@@ -109,7 +109,7 @@ def get_status(
 ) -> SimulationStatusResponse:
     run = handler.handle(GetSimulationStatusQuery(SimulationRunId(run_id)))
     return SimulationStatusResponse(
-        id=run.id.value, status=run.status.value, error_message=run.error_message
+        run_id=run.id.value, status=run.status.value, error_message=run.error_message
     )
 
 

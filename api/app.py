@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from api.routers.simulations import router as simulations_router
+from api.routers.simulation_runs import router as simulation_runs_router
 from application.exceptions import SimulationConflictException, SimulationRunNotFoundException
 from composition.api_bootstrap import bootstrap_api_state
 
@@ -24,7 +24,7 @@ def create_app(output_dir: Path = Path("output")) -> FastAPI:
     app.state.run_scope = run_scope
     app.state.simulation_status_handler = status_handler
 
-    app.include_router(simulations_router)
+    app.include_router(simulation_runs_router)
     # add_exception_handler() rather than the @app.exception_handler(...) decorator form —
     # the decorator registers the function as a side effect that static analysis can't see
     # as a "use", so it reads as dead code under strict checking. This explicit call form

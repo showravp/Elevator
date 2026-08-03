@@ -54,12 +54,12 @@ config, then submit the request batch in a second call (config can be changed wi
 in between, but only before requests are submitted):
 
 ```bash
-curl -X POST http://127.0.0.1:8000/simulations \
+curl -X POST http://127.0.0.1:8000/simulation-runs \
   -H "Content-Type: application/json" \
   -d '{"num_elevators": 2, "num_floors": 10, "elevator_capacity": 4}'
-# -> {"id": "<run-id>", "status": "pending"}
+# -> {"run_id": "<run-id>", "status": "pending"}
 
-curl -X POST http://127.0.0.1:8000/simulations/<run-id>/requests \
+curl -X POST http://127.0.0.1:8000/simulation-runs/<run-id>/requests \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -67,11 +67,11 @@ curl -X POST http://127.0.0.1:8000/simulations/<run-id>/requests \
       {"time": 3, "id": "passenger2", "source": 9, "dest": 1}
     ]
   }'
-# -> {"id": "<run-id>", "status": "running"}
+# -> {"run_id": "<run-id>", "status": "running"}
 
-curl http://127.0.0.1:8000/simulations/<run-id>                    # status
-curl http://127.0.0.1:8000/simulations/<run-id>/position-log        # required output 1
-curl http://127.0.0.1:8000/simulations/<run-id>/passenger-stats     # required output 2
+curl http://127.0.0.1:8000/simulation-runs/<run-id>                    # status
+curl http://127.0.0.1:8000/simulation-runs/<run-id>/position-log       # required output 1
+curl http://127.0.0.1:8000/simulation-runs/<run-id>/passenger-stats    # required output 2
 ```
 
 Simulations run in-memory in milliseconds, so by the time you poll, `status` is almost
@@ -123,11 +123,12 @@ TBD — tracked as the project progresses, filled in before final submission.
   synchronously. See `CLAUDE.md` for the fuller rationale.
 - **Configuration and passenger requests are separate resources.** A run can't serve
   requests without an established configuration, and configuration can't change once
-  requests are submitted — enforced via status (`PUT /simulations/{id}/config` and
-  `POST /simulations/{id}/requests` both 409 once the run is no longer `pending`) and via a
-  config file (`output/<run-id>/config.csv`) that's the actual source of truth, not just an
-  in-memory flag.
-- **`POST /simulations/{id}/requests` accepts a full request batch, not a live stream.**
+  requests are submitted — enforced via status (`PUT /simulation-runs/{run_id}/config` and
+  `POST /simulation-runs/{run_id}/requests` both 409 once the run is no longer `pending`)
+  and via a config file (`output/<run-id>/config.csv`) that's the actual source of truth,
+  not just an in-memory flag.
+- **`POST /simulation-runs/{run_id}/requests` accepts a full request batch, not a live
+  stream.**
   The take-home's input is inherently "the whole request list, known up front, replayed
   through discrete time without peeking ahead" — the API models that as one call with the
   full batch (JSON, not the spec's literal CSV) rather than pretending requests arrive over
