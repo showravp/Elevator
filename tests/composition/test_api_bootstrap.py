@@ -15,7 +15,7 @@ def test_bootstrap_returns_a_registry_and_a_run_scope_sharing_it() -> None:
 
 
 def test_status_handler_shares_the_same_registry_as_run_scope() -> None:
-    registry, run_scope, status_handler = bootstrap_api_state()
+    _registry, run_scope, status_handler = bootstrap_api_state()
     run_id = run_scope.create(requests=[], num_elevators=1, num_floors=5, elevator_capacity=1)
 
     status = status_handler.handle(GetSimulationStatusQuery(run_id))

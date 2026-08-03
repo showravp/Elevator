@@ -8,6 +8,10 @@ from application.exceptions import SimulationRunNotFoundException
 from composition.api_bootstrap import bootstrap_api_state
 
 
+def _handle_not_found(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
 def create_app(output_dir: Path = Path("output")) -> FastAPI:
     app = FastAPI(title="Elevator Simulation API")
 
@@ -17,10 +21,11 @@ def create_app(output_dir: Path = Path("output")) -> FastAPI:
     app.state.simulation_status_handler = status_handler
 
     app.include_router(simulations_router)
-
-    @app.exception_handler(SimulationRunNotFoundException)
-    def handle_not_found(request: Request, exc: SimulationRunNotFoundException) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"detail": str(exc)})
+    # add_exception_handler() rather than the @app.exception_handler(...) decorator form —
+    # the decorator registers the function as a side effect that static analysis can't see
+    # as a "use", so it reads as dead code under strict checking. This explicit call form
+    # is equally idiomatic FastAPI and makes the registration visible to the type checker.
+    app.add_exception_handler(SimulationRunNotFoundException, _handle_not_found)
 
     return app
 

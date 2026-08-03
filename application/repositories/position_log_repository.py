@@ -5,5 +5,4 @@ from application.read_models import PositionLogRow
 
 class IPositionLogRepository(ABC):
     @abstractmethod
-    def get_rows(self) -> list[PositionLogRow]:
-        ...
+    def get_rows(self) -> list[PositionLogRow]: ...

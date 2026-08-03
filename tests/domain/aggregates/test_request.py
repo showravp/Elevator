@@ -1,7 +1,11 @@
 import pytest
 
 from domain.aggregates import Request
-from domain.exceptions import DuplicateAssignmentException, InvalidFloorException, SameFloorRequestException
+from domain.exceptions import (
+    DuplicateAssignmentException,
+    InvalidFloorException,
+    SameFloorRequestException,
+)
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 
 

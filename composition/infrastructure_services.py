@@ -24,18 +24,14 @@ class InfrastructureServicesContainer(containers.DeclarativeContainer):
     elevator_repository = providers.Singleton(
         EventSourcedElevatorRepository, event_store=event_store
     )
-    request_repository = providers.Singleton(
-        EventSourcedRequestRepository, event_store=event_store
-    )
+    request_repository = providers.Singleton(EventSourcedRequestRepository, event_store=event_store)
 
     # These implement application-layer read-repository ports (IPositionLogRepository,
     # IPassengerStatsRepository) — swapping in a SQL-backed implementation later means
     # replacing these two providers only, nothing upstream (orchestrator, query handlers)
     # changes since they depend on the port, not on these concrete classes.
     position_log_projection = providers.Singleton(PositionLogProjection, event_bus=event_bus)
-    passenger_stats_projection = providers.Singleton(
-        PassengerStatsProjection, event_bus=event_bus
-    )
+    passenger_stats_projection = providers.Singleton(PassengerStatsProjection, event_bus=event_bus)
 
     position_log_file_writer = providers.Singleton(
         CsvPositionLogFileWriter, output_dir=config.output_dir

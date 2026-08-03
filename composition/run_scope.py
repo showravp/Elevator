@@ -49,4 +49,6 @@ class RunScope:
         try:
             return self._containers[run_id]
         except KeyError:
-            raise SimulationRunNotFoundException(f"simulation run {run_id.value} not found") from None
+            raise SimulationRunNotFoundException(
+                f"simulation run {run_id.value} not found"
+            ) from None

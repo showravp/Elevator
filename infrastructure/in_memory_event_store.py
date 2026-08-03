@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from application.exceptions import ConcurrencyConflictException
 from application.outbox_entry import OutboxEntry
@@ -16,9 +16,7 @@ class InMemoryEventStore(IEventStore, IOutboxStore):
         self._outbox: list[OutboxEntry] = []
         self._next_sequence: int = 0
 
-    def append(
-        self, stream_id: str, expected_version: int, events: Sequence[DomainEvent]
-    ) -> None:
+    def append(self, stream_id: str, expected_version: int, events: Sequence[DomainEvent]) -> None:
         stream = self._streams.setdefault(stream_id, [])
         if len(stream) != expected_version:
             raise ConcurrencyConflictException(

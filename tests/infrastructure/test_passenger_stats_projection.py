@@ -10,18 +10,26 @@ def test_summary_computes_wait_and_total_time_for_completed_trips_only() -> None
 
     # p1: submitted@0, picked up@2 (wait=2), dropped off@8 (travel=6, total=8)
     bus.publish(
-        RequestSubmitted(passenger_id=PassengerId("p1"), source=Floor(1), destination=Floor(9), tick=Tick(0))
+        RequestSubmitted(
+            passenger_id=PassengerId("p1"), source=Floor(1), destination=Floor(9), tick=Tick(0)
+        )
     )
     bus.publish(
-        PassengerPickedUp(elevator_id=ElevatorId(0), passenger_id=PassengerId("p1"), floor=Floor(1), tick=Tick(2))
+        PassengerPickedUp(
+            elevator_id=ElevatorId(0), passenger_id=PassengerId("p1"), floor=Floor(1), tick=Tick(2)
+        )
     )
     bus.publish(
-        PassengerDroppedOff(elevator_id=ElevatorId(0), passenger_id=PassengerId("p1"), floor=Floor(9), tick=Tick(8))
+        PassengerDroppedOff(
+            elevator_id=ElevatorId(0), passenger_id=PassengerId("p1"), floor=Floor(9), tick=Tick(8)
+        )
     )
 
     # p2: submitted@3, still waiting to be picked up (still in progress)
     bus.publish(
-        RequestSubmitted(passenger_id=PassengerId("p2"), source=Floor(0), destination=Floor(5), tick=Tick(3))
+        RequestSubmitted(
+            passenger_id=PassengerId("p2"), source=Floor(0), destination=Floor(5), tick=Tick(3)
+        )
     )
 
     summary = projection.get_summary()

@@ -1,4 +1,7 @@
 from domain.aggregates import Elevator, Request
+from domain.services.elevator_assigned import ElevatorAssigned
+from domain.services.no_elevator_available import NoElevatorAvailable
+from domain.services.scheduling_outcome import SchedulingOutcome
 from domain.services.scheduling_policy import ISchedulingPolicy
 from domain.value_objects import Direction
 
@@ -6,11 +9,12 @@ from domain.value_objects import Direction
 class NearestCarSchedulingPolicy(ISchedulingPolicy):
     _DIRECTION_MISMATCH_PENALTY = 1000
 
-    def select_elevator(self, request: Request, elevators: list[Elevator]) -> Elevator | None:
+    def select_elevator(self, request: Request, elevators: list[Elevator]) -> SchedulingOutcome:
         candidates = [elevator for elevator in elevators if elevator.has_capacity_for_new_stop]
         if not candidates:
-            return None
-        return min(candidates, key=lambda elevator: self._cost(elevator, request))
+            return NoElevatorAvailable()
+        best = min(candidates, key=lambda elevator: self._cost(elevator, request))
+        return ElevatorAssigned(best)
 
     def _cost(self, elevator: Elevator, request: Request) -> int:
         distance = elevator.current_floor.distance_to(request.source)

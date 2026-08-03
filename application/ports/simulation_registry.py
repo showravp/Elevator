@@ -6,8 +6,7 @@ from application.simulation_run_id import SimulationRunId
 
 class ISimulationRegistry(ABC):
     @abstractmethod
-    def add(self, run: SimulationRun) -> None:
-        ...
+    def add(self, run: SimulationRun) -> None: ...
 
     @abstractmethod
     def get(self, run_id: SimulationRunId) -> SimulationRun:

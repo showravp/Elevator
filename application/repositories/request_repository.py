@@ -10,5 +10,4 @@ class IRequestRepository(ABC):
         """Raises AggregateNotFoundException if no such request has ever been saved."""
 
     @abstractmethod
-    def save(self, request: Request) -> None:
-        ...
+    def save(self, request: Request) -> None: ...

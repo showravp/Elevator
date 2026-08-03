@@ -14,3 +14,60 @@ include = ["domain*", "application*", "infrastructure*", "api*", "composition*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.pyright]
+include = ["domain", "application", "infrastructure", "api", "composition", "tests"]
+exclude = ["**/__pycache__", ".venv"]
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "strict"
+pythonVersion = "3.13"
+
+# Scoped relaxations for third-party stub quality we don't control — not a general
+# weakening of strictness for our own code, which stays fully strict everywhere else.
+# Note: setting `root` on an executionEnvironment also narrows its import-resolution
+# root, so extraPaths = ["."] is required in each one to keep project-relative imports
+# (e.g. `from application.exceptions import ...`) resolving the same as everywhere else.
+# venvPath/venv are NOT valid executionEnvironment keys (pyright warns and ignores them
+# here) — they only apply at the top level, which already covers every environment.
+[[tool.pyright.executionEnvironments]]
+# dependency-injector's own type stubs don't propagate concrete Provider types, so every
+# provider access in composition/ (and any test exercising the built containers directly)
+# reports as partially-Unknown regardless of how our code is written.
+root = "composition"
+extraPaths = ["."]
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "tests/composition"
+extraPaths = ["."]
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[[tool.pyright.executionEnvironments]]
+# Starlette's TestClient / httpx have the same imprecise-stub issue for .post()/.get()
+# response typing — everything downstream of a response object reports as Unknown.
+root = "tests/api"
+extraPaths = ["."]
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["domain", "application", "infrastructure", "api", "composition"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's own DI pattern (`param: T = Depends(get_t)`) is the idiomatic way to declare
+# route dependencies — B008 exists to catch accidental mutable-default-argument bugs, not
+# this. Framework's convention wins over the generic rule.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Body", "fastapi.Path"]

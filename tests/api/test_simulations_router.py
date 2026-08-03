@@ -151,7 +151,10 @@ def test_two_concurrent_runs_stay_isolated(tmp_path: Path) -> None:
         "num_elevators": 1,
         "num_floors": 10,
         "elevator_capacity": 2,
-        "requests": [{"time": 0, "id": "b1", "source": 0, "dest": 4}, {"time": 0, "id": "b2", "source": 1, "dest": 6}],
+        "requests": [
+            {"time": 0, "id": "b1", "source": 0, "dest": 4},
+            {"time": 0, "id": "b2", "source": 1, "dest": 6},
+        ],
     }
 
     run_a = client.post("/simulations", json=payload_a).json()["id"]

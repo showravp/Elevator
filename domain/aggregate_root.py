@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Self, TypeVar
-
-TEvent = TypeVar("TEvent")
-TId = TypeVar("TId")
+from typing import Self
 
 
-class AggregateRoot(ABC, Generic[TEvent, TId]):
+class AggregateRoot[TEvent, TId](ABC):
     """Event-sourced aggregate root. `apply()` is the only path that may change state —
     command methods on subclasses must go through `raise_event()`, never set fields directly,
     so replayed state and freshly-mutated state are always produced the same way."""
@@ -40,7 +37,8 @@ class AggregateRoot(ABC, Generic[TEvent, TId]):
     @classmethod
     def replay(cls, events: list[TEvent]) -> Self:
         aggregate = cls.__new__(cls)
-        AggregateRoot.__init__(aggregate)
+        aggregate._version = 0
+        aggregate._uncommitted_events = []
         for event in events:
             aggregate.apply(event)
             aggregate._version += 1
