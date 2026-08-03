@@ -28,8 +28,13 @@ for the follow-up presentation — not because the problem size alone demands it
   base: `apply()`/`raise_event()`), each protecting only its own invariant (capacity/movement
   vs. no-double-assignment). No shared "Building" aggregate — the fleet is a plain collection.
 - **CQRS-lite**: commands mutate aggregates and emit events; queries only ever read from
-  projections (`PositionLogProjection`, `PassengerStatsProjection`), never the write model.
-  In-process and synchronous — no message broker, no eventual consistency.
+  read models via repository ports (`PositionLogRepository`, `PassengerStatsRepository`),
+  never the write model. The event-driven writers of those read models
+  (`PositionLogProjection`, `PassengerStatsProjection`) live in `infrastructure/`, not
+  `application/` — they're the swappable-for-a-real-database piece, same as an ORM-backed
+  repository would be. Application code (query handlers, `SimulationOrchestrator`) depends
+  only on the port, never on these concrete classes. In-process and synchronous — no
+  message broker, no eventual consistency.
 - **Outbox pattern**: `EventStore.append()` writes the aggregate stream and the outbox
   atomically (one in-memory call, no dual-write hazard by construction). `OutboxRelay.drain()`
   publishes to `EventBus` once per tick, *after* that tick's writes — deterministic ordering,
@@ -39,7 +44,7 @@ for the follow-up presentation — not because the problem size alone demands it
 - **Presentation**: REST API only (FastAPI), no CLI. `POST /simulations` is async —
   returns `202 {id, status}` via `BackgroundTasks`, results polled via `GET /simulations/{id}`
   and `GET /simulations/{id}/position-log` | `/passenger-stats`. Each run gets an isolated
-  `EventStore`/`EventBus`/repositories/projections via a DI child scope, keyed in an
+  `EventStore`/`EventBus`/repositories/read models via a DI child scope, keyed in an
   in-memory `SimulationRegistry` (does not persist across server restarts).
 - **DI**: `dependency-injector` library, used *only* in `composition/` — one registration
   module per layer (`domain_services.py`, `application_services.py`,
@@ -78,8 +83,11 @@ Build sequence (each its own `spodder/` branch): `domain-core` → `event-sourci
 
 ```
 domain/          Elevator/Request aggregates, value objects, events, SchedulingPolicy — no I/O
-application/     commands, queries, handlers, process manager, projections, ports, orchestrator
-infrastructure/  in-memory event store/bus/registry, event-sourced repositories, CSV writers
+application/     commands, queries, handlers, process manager, read models (DTOs), ports,
+                 repository interfaces (write *and* read side), orchestrator
+infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
+                 projections (event-driven read-model writers) — all swappable for a real
+                 database without touching application/ or domain/
 api/             FastAPI app, routers, pydantic schemas — the only presentation layer
 composition/     DI container + per-layer registration modules (dependency-injector)
 tests/           mirrors the tree above

@@ -6,7 +6,6 @@ from application.orchestrator import SimulationOrchestrator
 from application.outbox_relay import OutboxRelay
 from application.ports import SimulationRegistry
 from application.process_managers import DispatchProcessManager
-from application.projections import PassengerStatsProjection, PositionLogProjection
 from composition.domain_services import DomainServicesContainer
 from composition.infrastructure_services import InfrastructureServicesContainer
 
@@ -28,12 +27,6 @@ class ApplicationServicesContainer(containers.DeclarativeContainer):
         outbox_store=infrastructure.event_store,
         event_bus=infrastructure.event_bus,
     )
-    position_log_projection = providers.Singleton(
-        PositionLogProjection, event_bus=infrastructure.event_bus
-    )
-    passenger_stats_projection = providers.Singleton(
-        PassengerStatsProjection, event_bus=infrastructure.event_bus
-    )
     dispatch_process_manager = providers.Singleton(
         DispatchProcessManager,
         elevator_repository=infrastructure.elevator_repository,
@@ -47,7 +40,7 @@ class ApplicationServicesContainer(containers.DeclarativeContainer):
         elevator_repository=infrastructure.elevator_repository,
         request_repository=infrastructure.request_repository,
         outbox_relay=outbox_relay,
-        passenger_stats_projection=passenger_stats_projection,
+        passenger_stats_repository=infrastructure.passenger_stats_projection,
         num_elevators=config.num_elevators,
         num_floors=config.num_floors,
         elevator_capacity=config.elevator_capacity,
@@ -58,8 +51,8 @@ class ApplicationServicesContainer(containers.DeclarativeContainer):
         registry=simulation_registry,
     )
     position_log_query_handler = providers.Singleton(
-        GetPositionLogHandler, projection=position_log_projection
+        GetPositionLogHandler, repository=infrastructure.position_log_projection
     )
     passenger_stats_query_handler = providers.Singleton(
-        GetPassengerStatsHandler, projection=passenger_stats_projection
+        GetPassengerStatsHandler, repository=infrastructure.passenger_stats_projection
     )

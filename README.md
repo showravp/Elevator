@@ -17,8 +17,10 @@ projections, orchestrator), DI composition root, and a FastAPI service exposing 
 
 ```
 domain/          Elevator/Request aggregates, value objects, events, SchedulingPolicy — no I/O
-application/     commands, queries, handlers, process manager, projections, ports, orchestrator
-infrastructure/  in-memory event store/bus/registry, event-sourced repositories, request source
+application/     commands, queries, handlers, process manager, read models, repository
+                 interfaces (write and read side), ports, orchestrator
+infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
+                 projections (event-driven read-model writers) — swappable for a real DB
 composition/     DI container + per-layer registration modules (dependency-injector)
 api/             FastAPI app, routers, pydantic schemas — the only presentation layer
 tests/           mirrors the tree above
@@ -91,6 +93,13 @@ TBD — tracked as the project progresses, filled in before final submission.
 - **CQRS is "lite" and event sourcing is real, but both scoped to a single in-process run.**
   No message broker, no eventual consistency — command handlers and the outbox relay run
   synchronously. See `CLAUDE.md` for the fuller rationale.
+- **The read side follows the repository pattern too, not just the write side.** Query
+  handlers and the orchestrator depend on `PositionLogRepository`/`PassengerStatsRepository`
+  (ports in `application/`), never on the concrete `PositionLogProjection`/
+  `PassengerStatsProjection` classes that implement them — those live in `infrastructure/`
+  and are the piece that would become an ORM-backed read model if this ran against a real
+  database. Swapping storage means replacing two infrastructure classes; nothing in
+  `application/` or `domain/` would change.
 - **`POST /simulations` accepts a full request batch, not a live stream.** The take-home's
   input is inherently "the whole request list, known up front, replayed through discrete
   time without peeking ahead" — the API models that as one call with the full batch (JSON,

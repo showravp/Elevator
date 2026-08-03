@@ -5,6 +5,8 @@ from infrastructure.event_sourced_request_repository import EventSourcedRequestR
 from infrastructure.in_memory_event_bus import InMemoryEventBus
 from infrastructure.in_memory_event_store import InMemoryEventStore
 from infrastructure.in_memory_request_source import InMemoryRequestSource
+from infrastructure.passenger_stats_projection import PassengerStatsProjection
+from infrastructure.position_log_projection import PositionLogProjection
 
 
 class InfrastructureServicesContainer(containers.DeclarativeContainer):
@@ -22,4 +24,13 @@ class InfrastructureServicesContainer(containers.DeclarativeContainer):
     )
     request_repository = providers.Singleton(
         EventSourcedRequestRepository, event_store=event_store
+    )
+
+    # These implement application-layer read-repository ports (PositionLogRepository,
+    # PassengerStatsRepository) — swapping in a SQL-backed implementation later means
+    # replacing these two providers only, nothing upstream (orchestrator, query handlers)
+    # changes since they depend on the port, not on these concrete classes.
+    position_log_projection = providers.Singleton(PositionLogProjection, event_bus=event_bus)
+    passenger_stats_projection = providers.Singleton(
+        PassengerStatsProjection, event_bus=event_bus
     )
