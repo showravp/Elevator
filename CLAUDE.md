@@ -51,13 +51,19 @@ for the follow-up presentation — not because the problem size alone demands it
   `infrastructure_services.py`), composed in `composition/container.py`. Domain and
   application classes stay plain constructor-injected Python; no framework imports leak
   inward. Per-run isolation is a child container built by `composition/run_scope.py`.
+  `composition/api_bootstrap.py` builds the one process-wide `SimulationRegistry` — `api/`
+  never imports `infrastructure` directly, same rule as everywhere else in the app; this
+  was a real gap found during a repository-pattern audit, not a hypothetical one.
 - **File convention**: one class (including enums/exceptions) per `.py` file, with
   `__init__.py` re-exports per package for ergonomic imports. Exempt: FastAPI router modules
   and DI-wiring modules, which group functions, not classes — splitting those would fight
   the framework's own idiom rather than add clarity.
 
 Build sequence (each its own `spodder/` branch): `domain-core` → `event-sourcing-infra` →
-`api`, then bonus schedulers/express-elevators as later branches.
+`api` → `read-repository-pattern` (audit fix: query handlers and the orchestrator were
+depending on concrete projection classes instead of repository ports; `api/app.py` was
+also constructing infrastructure directly instead of going through `composition/`), then
+bonus schedulers/express-elevators as later branches.
 
 ## Workflow
 

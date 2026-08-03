@@ -10,8 +10,10 @@ stats output).
 
 Status: core simulation and REST API are built and tested end-to-end — domain layer,
 event-sourcing infrastructure (store, outbox, repositories, dispatch process manager,
-projections, orchestrator), DI composition root, and a FastAPI service exposing it. See
-[CLAUDE.md](CLAUDE.md) for the architecture and build sequence.
+projections, orchestrator), DI composition root, and a FastAPI service exposing it. The
+repository pattern is applied consistently on both sides of CQRS (see below) — audited and
+fixed in a dedicated pass, not just assumed. See [CLAUDE.md](CLAUDE.md) for the full
+architecture and build sequence.
 
 ## Project layout
 
@@ -25,6 +27,28 @@ composition/     DI container + per-layer registration modules (dependency-injec
 api/             FastAPI app, routers, pydantic schemas — the only presentation layer
 tests/           mirrors the tree above
 ```
+
+## Persistence and the repository pattern
+
+Everything is in-memory today, but every access to it — write and read — goes through a
+repository interface defined in `application/`, never a concrete storage class. The
+concrete classes live in `infrastructure/` and are the only pieces that would need to
+change if this ran against a real database (e.g. an ORM) instead:
+
+| Port (`application/`) | In-memory adapter (`infrastructure/`) | Backs |
+|---|---|---|
+| `ElevatorRepository` | `EventSourcedElevatorRepository` | write side — `Elevator` aggregate |
+| `RequestRepository` | `EventSourcedRequestRepository` | write side — `Request` aggregate |
+| `EventStore` / `OutboxStore` | `InMemoryEventStore` | the append-only log both repositories above replay from |
+| `PositionLogRepository` | `PositionLogProjection` | read side — required output 1 |
+| `PassengerStatsRepository` | `PassengerStatsProjection` | read side — required output 2 |
+| `SimulationRegistry` | `InMemorySimulationRegistry` | run status tracking (Pending/Running/Completed/Failed) |
+
+Command handlers, query handlers, `DispatchProcessManager`, and `SimulationOrchestrator`
+all depend only on the left column. `api/` itself never imports `infrastructure` directly
+either — even the one process-wide `SimulationRegistry` gets constructed in
+`composition/api_bootstrap.py`, not in `api/app.py`. Every adapter in the right column has
+its own test suite under `tests/infrastructure/`, mirroring this table 1:1.
 
 ## How to run
 
@@ -65,7 +89,10 @@ Simulations run in-memory in milliseconds, so by the time you poll, `status` is 
 always already `completed`. Run status lives only for the life of the server process — see
 "What I'd improve with more time."
 
-Test suite:
+Test suite — `tests/` mirrors the source tree exactly: `tests/infrastructure/` covers
+every persistence adapter (one test file per class, 1:1 with the table above),
+`tests/domain/` is pure unit tests with no I/O, `tests/api/` drives the actual FastAPI app
+via `TestClient`:
 
 ```bash
 pytest
@@ -93,13 +120,6 @@ TBD — tracked as the project progresses, filled in before final submission.
 - **CQRS is "lite" and event sourcing is real, but both scoped to a single in-process run.**
   No message broker, no eventual consistency — command handlers and the outbox relay run
   synchronously. See `CLAUDE.md` for the fuller rationale.
-- **The read side follows the repository pattern too, not just the write side.** Query
-  handlers and the orchestrator depend on `PositionLogRepository`/`PassengerStatsRepository`
-  (ports in `application/`), never on the concrete `PositionLogProjection`/
-  `PassengerStatsProjection` classes that implement them — those live in `infrastructure/`
-  and are the piece that would become an ORM-backed read model if this ran against a real
-  database. Swapping storage means replacing two infrastructure classes; nothing in
-  `application/` or `domain/` would change.
 - **`POST /simulations` accepts a full request batch, not a live stream.** The take-home's
   input is inherently "the whole request list, known up front, replayed through discrete
   time without peeking ahead" — the API models that as one call with the full batch (JSON,
