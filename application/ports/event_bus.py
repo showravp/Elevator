@@ -6,7 +6,7 @@ from domain.events import DomainEvent
 EventHandler = Callable[[DomainEvent], None]
 
 
-class EventBus(ABC):
+class IEventBus(ABC):
     @abstractmethod
     def subscribe(self, event_type: type[DomainEvent], handler: EventHandler) -> None:
         ...

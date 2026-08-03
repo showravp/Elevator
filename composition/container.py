@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from application.ports import SimulationRegistry
+from application.ports import ISimulationRegistry
 from application.raw_request import RawRequest
 from composition.application_services import ApplicationServicesContainer
 
@@ -10,7 +10,7 @@ def build_application(
     num_elevators: int,
     num_floors: int,
     elevator_capacity: int,
-    simulation_registry: SimulationRegistry,
+    simulation_registry: ISimulationRegistry,
     output_dir: Path = Path("output"),
 ) -> ApplicationServicesContainer:
     container = ApplicationServicesContainer(simulation_registry=simulation_registry)

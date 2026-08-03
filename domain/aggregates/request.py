@@ -1,6 +1,6 @@
 from domain.aggregate_root import AggregateRoot
 from domain.events import DomainEvent, RequestAssigned, RequestSubmitted
-from domain.exceptions import DuplicateAssignmentError, InvalidFloorError, SameFloorRequestError
+from domain.exceptions import DuplicateAssignmentException, InvalidFloorException, SameFloorRequestException
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 
 
@@ -46,12 +46,12 @@ class Request(AggregateRoot[DomainEvent, PassengerId]):
         tick: Tick,
     ) -> "Request":
         if not (0 <= source.value < num_floors) or not (0 <= destination.value < num_floors):
-            raise InvalidFloorError(
+            raise InvalidFloorException(
                 f"source {source.value} / destination {destination.value} out of bounds "
                 f"for a {num_floors}-floor building"
             )
         if source == destination:
-            raise SameFloorRequestError(
+            raise SameFloorRequestException(
                 f"passenger {passenger_id.value} requested source and destination "
                 f"both floor {source.value}"
             )
@@ -65,7 +65,7 @@ class Request(AggregateRoot[DomainEvent, PassengerId]):
 
     def assign(self, elevator_id: ElevatorId, tick: Tick) -> None:
         if self.is_assigned:
-            raise DuplicateAssignmentError(
+            raise DuplicateAssignmentException(
                 f"passenger {self._id.value} is already assigned to elevator "
                 f"{self._assigned_elevator_id.value}"  # type: ignore[union-attr]
             )

@@ -1,10 +1,10 @@
 from collections import defaultdict
 
-from application.ports import EventBus, EventHandler
+from application.ports import EventHandler, IEventBus
 from domain.events import DomainEvent
 
 
-class InMemoryEventBus(EventBus):
+class InMemoryEventBus(IEventBus):
     def __init__(self) -> None:
         self._handlers: dict[type, list[EventHandler]] = defaultdict(list)
 

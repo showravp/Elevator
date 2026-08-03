@@ -1,7 +1,7 @@
 import pytest
 
 from domain.aggregates import Elevator
-from domain.exceptions import CapacityExceededError, InvalidFloorError
+from domain.exceptions import CapacityExceededException, InvalidFloorException
 from domain.value_objects import Direction, ElevatorId, Floor, PassengerId, Tick
 
 
@@ -28,7 +28,7 @@ def test_provision_sets_initial_state_and_emits_one_event() -> None:
 
 
 def test_provision_rejects_out_of_bounds_starting_floor() -> None:
-    with pytest.raises(InvalidFloorError):
+    with pytest.raises(InvalidFloorException):
         Elevator.provision(
             elevator_id=ElevatorId(0),
             capacity=4,
@@ -52,14 +52,14 @@ def test_schedule_stop_rejects_when_at_capacity() -> None:
     elevator = _provisioned_elevator(capacity=1)
     elevator.schedule_stop(PassengerId("p1"), Floor(2), Floor(5), Tick(1))
 
-    with pytest.raises(CapacityExceededError):
+    with pytest.raises(CapacityExceededException):
         elevator.schedule_stop(PassengerId("p2"), Floor(3), Floor(6), Tick(1))
 
 
 def test_schedule_stop_rejects_out_of_bounds_floor() -> None:
     elevator = _provisioned_elevator(num_floors=10)
 
-    with pytest.raises(InvalidFloorError):
+    with pytest.raises(InvalidFloorException):
         elevator.schedule_stop(PassengerId("p1"), Floor(20), Floor(3), Tick(1))
 
 

@@ -1,12 +1,12 @@
-from application.exceptions import AggregateNotFoundError
-from application.ports import EventStore
-from application.repositories import ElevatorRepository
+from application.exceptions import AggregateNotFoundException
+from application.ports import IEventStore
+from application.repositories import IElevatorRepository
 from domain.aggregates import Elevator
 from domain.value_objects import ElevatorId
 
 
-class EventSourcedElevatorRepository(ElevatorRepository):
-    def __init__(self, event_store: EventStore) -> None:
+class EventSourcedElevatorRepository(IElevatorRepository):
+    def __init__(self, event_store: IEventStore) -> None:
         self._event_store = event_store
         self._known_ids: set[ElevatorId] = set()
 
@@ -17,7 +17,7 @@ class EventSourcedElevatorRepository(ElevatorRepository):
     def get(self, elevator_id: ElevatorId) -> Elevator:
         events = self._event_store.load_stream(self._stream_id(elevator_id))
         if not events:
-            raise AggregateNotFoundError(f"elevator {elevator_id.value} not found")
+            raise AggregateNotFoundException(f"elevator {elevator_id.value} not found")
         return Elevator.replay(events)
 
     def save(self, elevator: Elevator) -> None:

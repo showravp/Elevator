@@ -1,12 +1,12 @@
 import csv
 from pathlib import Path
 
-from application.ports import PassengerStatsFileWriter
+from application.ports import IPassengerStatsFileWriter
 from application.read_models import PassengerStatsSummary
 from application.simulation_run_id import SimulationRunId
 
 
-class CsvPassengerStatsFileWriter(PassengerStatsFileWriter):
+class CsvPassengerStatsFileWriter(IPassengerStatsFileWriter):
     def __init__(self, output_dir: Path = Path("output")) -> None:
         self._output_dir = output_dir
 

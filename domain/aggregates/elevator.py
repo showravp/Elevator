@@ -7,7 +7,7 @@ from domain.events import (
     PassengerPickedUp,
     PickupStopScheduled,
 )
-from domain.exceptions import CapacityExceededError, InvalidFloorError
+from domain.exceptions import CapacityExceededException, InvalidFloorException
 from domain.value_objects import Direction, ElevatorId, Floor, PassengerId, Tick
 
 
@@ -54,7 +54,7 @@ class Elevator(AggregateRoot[DomainEvent, ElevatorId]):
         tick: Tick,
     ) -> "Elevator":
         if not (0 <= starting_floor.value < num_floors):
-            raise InvalidFloorError(
+            raise InvalidFloorException(
                 f"starting_floor {starting_floor.value} is out of bounds for a "
                 f"{num_floors}-floor building"
             )
@@ -76,12 +76,12 @@ class Elevator(AggregateRoot[DomainEvent, ElevatorId]):
         if not (0 <= source.value < self._num_floors) or not (
             0 <= destination.value < self._num_floors
         ):
-            raise InvalidFloorError(
+            raise InvalidFloorException(
                 f"source {source.value} / destination {destination.value} out of bounds "
                 f"for a {self._num_floors}-floor building"
             )
         if not self.has_capacity_for_new_stop:
-            raise CapacityExceededError(
+            raise CapacityExceededException(
                 f"elevator {self._id.value} at capacity ({self._capacity}); "
                 f"cannot accept passenger {passenger_id.value}"
             )

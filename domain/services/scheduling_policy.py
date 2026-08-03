@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from domain.aggregates import Elevator, Request
 
 
-class SchedulingPolicy(ABC):
+class ISchedulingPolicy(ABC):
     @abstractmethod
     def select_elevator(self, request: Request, elevators: list[Elevator]) -> Elevator | None:
         """Choose the best elevator for `request`, or None if none currently has capacity

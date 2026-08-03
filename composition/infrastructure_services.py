@@ -28,8 +28,8 @@ class InfrastructureServicesContainer(containers.DeclarativeContainer):
         EventSourcedRequestRepository, event_store=event_store
     )
 
-    # These implement application-layer read-repository ports (PositionLogRepository,
-    # PassengerStatsRepository) — swapping in a SQL-backed implementation later means
+    # These implement application-layer read-repository ports (IPositionLogRepository,
+    # IPassengerStatsRepository) — swapping in a SQL-backed implementation later means
     # replacing these two providers only, nothing upstream (orchestrator, query handlers)
     # changes since they depend on the port, not on these concrete classes.
     position_log_projection = providers.Singleton(PositionLogProjection, event_bus=event_bus)

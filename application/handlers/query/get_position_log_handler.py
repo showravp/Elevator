@@ -1,10 +1,10 @@
 from application.queries import GetPositionLogQuery
 from application.read_models import PositionLogRow
-from application.repositories import PositionLogRepository
+from application.repositories import IPositionLogRepository
 
 
 class GetPositionLogHandler:
-    def __init__(self, repository: PositionLogRepository) -> None:
+    def __init__(self, repository: IPositionLogRepository) -> None:
         self._repository = repository
 
     def handle(self, query: GetPositionLogQuery) -> list[PositionLogRow]:

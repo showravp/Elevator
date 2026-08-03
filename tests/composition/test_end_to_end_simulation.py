@@ -41,6 +41,22 @@ def test_simulation_serves_every_passenger_and_computes_sane_stats() -> None:
     assert summary.min_total_time >= 1  # travel is never instantaneous when source != dest
 
 
+def test_request_at_the_elevators_starting_floor_has_zero_wait_time() -> None:
+    # Regression test: the orchestrator used to drain the outbox only after advancing
+    # elevators each tick, so a request assigned this tick could never influence this
+    # tick's movement — even an elevator already idling on the requested floor would
+    # still wait a full tick before picking up. Assignment must now happen (drain) before
+    # movement (advance) within the same tick, so pickup can happen at tick 0 here.
+    requests = [_raw("p1", source=0, destination=5, tick=0)]
+
+    app = _build(requests, num_elevators=1, num_floors=10, elevator_capacity=4)
+    app.orchestrator().run()
+
+    summary = app.passenger_stats_query_handler().handle(GetPassengerStatsQuery())
+    assert summary.completed_count == 1
+    assert summary.min_wait_time == 0
+
+
 def test_position_log_has_a_row_for_every_elevator_at_every_tick_up_to_completion() -> None:
     requests = [_raw("p1", source=0, destination=9, tick=0)]
 

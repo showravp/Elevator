@@ -1,9 +1,9 @@
-from application.ports import RequestSource
+from application.ports import IRequestSource
 from application.raw_request import RawRequest
 from domain.value_objects import Tick
 
 
-class InMemoryRequestSource(RequestSource):
+class InMemoryRequestSource(IRequestSource):
     def __init__(self, requests: list[RawRequest]) -> None:
         self._remaining = sorted(requests, key=lambda request: request.tick.value)
 

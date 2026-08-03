@@ -1,12 +1,12 @@
-from application.exceptions import AggregateNotFoundError
-from application.ports import EventStore
-from application.repositories import RequestRepository
+from application.exceptions import AggregateNotFoundException
+from application.ports import IEventStore
+from application.repositories import IRequestRepository
 from domain.aggregates import Request
 from domain.value_objects import PassengerId
 
 
-class EventSourcedRequestRepository(RequestRepository):
-    def __init__(self, event_store: EventStore) -> None:
+class EventSourcedRequestRepository(IRequestRepository):
+    def __init__(self, event_store: IEventStore) -> None:
         self._event_store = event_store
 
     @staticmethod
@@ -16,7 +16,7 @@ class EventSourcedRequestRepository(RequestRepository):
     def get(self, passenger_id: PassengerId) -> Request:
         events = self._event_store.load_stream(self._stream_id(passenger_id))
         if not events:
-            raise AggregateNotFoundError(f"request {passenger_id.value} not found")
+            raise AggregateNotFoundException(f"request {passenger_id.value} not found")
         return Request.replay(events)
 
     def save(self, request: Request) -> None:

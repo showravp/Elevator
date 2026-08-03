@@ -4,7 +4,7 @@ from application.handlers.command import ExecuteSimulationRunHandler
 from application.handlers.query import GetPassengerStatsHandler, GetPositionLogHandler
 from application.orchestrator import SimulationOrchestrator
 from application.outbox_relay import OutboxRelay
-from application.ports import SimulationRegistry
+from application.ports import ISimulationRegistry
 from application.process_managers import DispatchProcessManager
 from composition.domain_services import DomainServicesContainer
 from composition.infrastructure_services import InfrastructureServicesContainer
@@ -15,8 +15,8 @@ class ApplicationServicesContainer(containers.DeclarativeContainer):
 
     # Provided from outside at container-construction time — the registry is process-wide
     # (tracks every run), unlike everything else in this container, which is per-run.
-    simulation_registry: providers.Dependency[SimulationRegistry] = providers.Dependency(
-        instance_of=SimulationRegistry
+    simulation_registry: providers.Dependency[ISimulationRegistry] = providers.Dependency(
+        instance_of=ISimulationRegistry
     )
 
     domain = providers.Container(DomainServicesContainer)

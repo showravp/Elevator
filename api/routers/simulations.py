@@ -10,7 +10,7 @@ from api.schemas import (
 )
 from application.commands import ExecuteSimulationRunCommand
 from application.handlers.query import GetSimulationStatusHandler
-from application.ports import SimulationRegistry
+from application.ports import ISimulationRegistry
 from application.queries import GetPassengerStatsQuery, GetPositionLogQuery, GetSimulationStatusQuery
 from application.raw_request import RawRequest
 from application.simulation_run_id import SimulationRunId
@@ -63,7 +63,7 @@ def get_status(
 def get_position_log(
     run_id: str,
     run_scope: RunScope = Depends(get_run_scope),
-    registry: SimulationRegistry = Depends(get_simulation_registry),
+    registry: ISimulationRegistry = Depends(get_simulation_registry),
 ) -> PositionLogResponse:
     parsed_id = SimulationRunId(run_id)
     run = registry.get(parsed_id)
@@ -84,7 +84,7 @@ def get_position_log(
 def get_passenger_stats(
     run_id: str,
     run_scope: RunScope = Depends(get_run_scope),
-    registry: SimulationRegistry = Depends(get_simulation_registry),
+    registry: ISimulationRegistry = Depends(get_simulation_registry),
 ) -> PassengerStatsResponse:
     parsed_id = SimulationRunId(run_id)
     run = registry.get(parsed_id)

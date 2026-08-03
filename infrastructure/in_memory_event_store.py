@@ -1,13 +1,13 @@
 from typing import Sequence
 
-from application.exceptions import ConcurrencyConflictError
+from application.exceptions import ConcurrencyConflictException
 from application.outbox_entry import OutboxEntry
-from application.ports import EventStore, OutboxStore
+from application.ports import IEventStore, IOutboxStore
 from domain.events import DomainEvent
 
 
-class InMemoryEventStore(EventStore, OutboxStore):
-    """Backs both EventStore and OutboxStore with the same underlying dict, so append()
+class InMemoryEventStore(IEventStore, IOutboxStore):
+    """Backs both IEventStore and IOutboxStore with the same underlying dict, so append()
     writes the stream and stages the outbox in a single call — atomic by construction,
     no dual-write hazard to guard against."""
 
@@ -21,7 +21,7 @@ class InMemoryEventStore(EventStore, OutboxStore):
     ) -> None:
         stream = self._streams.setdefault(stream_id, [])
         if len(stream) != expected_version:
-            raise ConcurrencyConflictError(
+            raise ConcurrencyConflictException(
                 f"stream {stream_id!r} expected version {expected_version} but was {len(stream)}"
             )
         for event in events:

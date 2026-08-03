@@ -1,9 +1,9 @@
 from domain.aggregates import Elevator, Request
-from domain.services.scheduling_policy import SchedulingPolicy
+from domain.services.scheduling_policy import ISchedulingPolicy
 from domain.value_objects import Direction
 
 
-class NearestCarSchedulingPolicy(SchedulingPolicy):
+class NearestCarSchedulingPolicy(ISchedulingPolicy):
     _DIRECTION_MISMATCH_PENALTY = 1000
 
     def select_elevator(self, request: Request, elevators: list[Elevator]) -> Elevator | None:

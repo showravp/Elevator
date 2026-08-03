@@ -23,7 +23,7 @@ class CreateSimulationRequestBody(BaseModel):
     def _ids_must_be_unique(self) -> "CreateSimulationRequestBody":
         # Not a domain rule duplicated here — there's no existing domain-level protection
         # against two submissions sharing a passenger id; without this, the batch would
-        # still fail, but deep in the event store as an opaque ConcurrencyConflictError
+        # still fail, but deep in the event store as an opaque ConcurrencyConflictException
         # once the run is already in progress. Batch well-formedness belongs at the
         # boundary, before anything becomes a domain object.
         ids = [request.id for request in self.requests]

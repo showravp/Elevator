@@ -1,6 +1,6 @@
 import pytest
 
-from application.exceptions import AggregateNotFoundError
+from application.exceptions import AggregateNotFoundException
 from domain.aggregates import Request
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 from infrastructure.event_sourced_request_repository import EventSourcedRequestRepository
@@ -10,7 +10,7 @@ from infrastructure.in_memory_event_store import InMemoryEventStore
 def test_get_on_unknown_request_raises_aggregate_not_found() -> None:
     repository = EventSourcedRequestRepository(InMemoryEventStore())
 
-    with pytest.raises(AggregateNotFoundError):
+    with pytest.raises(AggregateNotFoundException):
         repository.get(PassengerId("p1"))
 
 
