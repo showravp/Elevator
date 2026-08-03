@@ -1,6 +1,7 @@
 from application.raw_request import RawRequest
 from composition.container import build_application
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
+from infrastructure.in_memory_simulation_registry import InMemorySimulationRegistry
 
 
 def _raw(passenger: str, source: int, destination: int, tick: int) -> RawRequest:
@@ -12,6 +13,16 @@ def _raw(passenger: str, source: int, destination: int, tick: int) -> RawRequest
     )
 
 
+def _build(requests: list[RawRequest], num_elevators: int, num_floors: int, elevator_capacity: int):
+    return build_application(
+        requests=requests,
+        num_elevators=num_elevators,
+        num_floors=num_floors,
+        elevator_capacity=elevator_capacity,
+        simulation_registry=InMemorySimulationRegistry(),
+    )
+
+
 def test_simulation_serves_every_passenger_and_computes_sane_stats() -> None:
     requests = [
         _raw("p1", source=0, destination=5, tick=0),
@@ -19,9 +30,7 @@ def test_simulation_serves_every_passenger_and_computes_sane_stats() -> None:
         _raw("p3", source=8, destination=1, tick=4),
     ]
 
-    app = build_application(
-        requests=requests, num_elevators=2, num_floors=10, elevator_capacity=4
-    )
+    app = _build(requests, num_elevators=2, num_floors=10, elevator_capacity=4)
     app.orchestrator().run()
 
     summary = app.passenger_stats_projection().summary()
@@ -34,9 +43,7 @@ def test_simulation_serves_every_passenger_and_computes_sane_stats() -> None:
 def test_position_log_has_a_row_for_every_elevator_at_every_tick_up_to_completion() -> None:
     requests = [_raw("p1", source=0, destination=9, tick=0)]
 
-    app = build_application(
-        requests=requests, num_elevators=2, num_floors=10, elevator_capacity=4
-    )
+    app = _build(requests, num_elevators=2, num_floors=10, elevator_capacity=4)
     app.orchestrator().run()
 
     rows = app.position_log_projection().rows
@@ -54,9 +61,7 @@ def test_requests_exceeding_a_single_elevators_capacity_are_all_eventually_serve
     # dispatch's pending-retry path (objective #1 — no request may be dropped).
     requests = [_raw(f"p{i}", source=0, destination=9, tick=0) for i in range(5)]
 
-    app = build_application(
-        requests=requests, num_elevators=1, num_floors=10, elevator_capacity=1
-    )
+    app = _build(requests, num_elevators=1, num_floors=10, elevator_capacity=1)
     app.orchestrator().run()
 
     summary = app.passenger_stats_projection().summary()
@@ -65,7 +70,7 @@ def test_requests_exceeding_a_single_elevators_capacity_are_all_eventually_serve
 
 
 def test_no_requests_still_records_tick_zero_for_every_idle_elevator() -> None:
-    app = build_application(requests=[], num_elevators=2, num_floors=10, elevator_capacity=4)
+    app = _build([], num_elevators=2, num_floors=10, elevator_capacity=4)
 
     app.orchestrator().run()
 

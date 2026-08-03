@@ -8,19 +8,19 @@ Full spec: see the take-home brief this project implements (elevator bank, confi
 floors/elevators/capacity, wait-time and travel-time optimization, position log + summary
 stats output).
 
-Status: domain layer and event-sourcing infrastructure (store, outbox, repositories, dispatch
-process manager, projections, orchestrator, DI composition root) are built and tested. No
-runnable entry point yet — that lands with the REST API branch. See [CLAUDE.md](CLAUDE.md)
-for the architecture and build sequence.
+Status: core simulation and REST API are built and tested end-to-end — domain layer,
+event-sourcing infrastructure (store, outbox, repositories, dispatch process manager,
+projections, orchestrator), DI composition root, and a FastAPI service exposing it. See
+[CLAUDE.md](CLAUDE.md) for the architecture and build sequence.
 
 ## Project layout
 
 ```
 domain/          Elevator/Request aggregates, value objects, events, SchedulingPolicy — no I/O
 application/     commands, queries, handlers, process manager, projections, ports, orchestrator
-infrastructure/  in-memory event store/bus, event-sourced repositories, request source
+infrastructure/  in-memory event store/bus/registry, event-sourced repositories, request source
 composition/     DI container + per-layer registration modules (dependency-injector)
-api/             FastAPI app, routers, pydantic schemas — not yet built
+api/             FastAPI app, routers, pydantic schemas — the only presentation layer
 tests/           mirrors the tree above
 ```
 
@@ -35,12 +35,35 @@ python -m venv .venv
 
 pip install -r requirements.txt -r requirements-dev.txt
 pip install -e .
+
+uvicorn api.app:app --reload
 ```
 
-There's no CLI or API entry point yet — that's the next branch. For now, a full simulation
-run is only reachable via `composition.container.build_application(...)` (see
-`tests/composition/test_end_to_end_simulation.py` for a working example), or by running the
-test suite:
+Then open **http://127.0.0.1:8000/docs** for interactive Swagger UI documentation of every
+endpoint, or drive it directly:
+
+```bash
+curl -X POST http://127.0.0.1:8000/simulations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "num_elevators": 2, "num_floors": 10, "elevator_capacity": 4,
+    "requests": [
+      {"time": 0, "id": "passenger1", "source": 1, "dest": 8},
+      {"time": 3, "id": "passenger2", "source": 9, "dest": 1}
+    ]
+  }'
+# -> {"id": "<run-id>", "status": "pending"}
+
+curl http://127.0.0.1:8000/simulations/<run-id>                    # status
+curl http://127.0.0.1:8000/simulations/<run-id>/position-log        # required output 1
+curl http://127.0.0.1:8000/simulations/<run-id>/passenger-stats     # required output 2
+```
+
+Simulations run in-memory in milliseconds, so by the time you poll, `status` is almost
+always already `completed`. Run status lives only for the life of the server process — see
+"What I'd improve with more time."
+
+Test suite:
 
 ```bash
 pytest
@@ -68,11 +91,24 @@ TBD — tracked as the project progresses, filled in before final submission.
 - **CQRS is "lite" and event sourcing is real, but both scoped to a single in-process run.**
   No message broker, no eventual consistency — command handlers and the outbox relay run
   synchronously. See `CLAUDE.md` for the fuller rationale.
+- **`POST /simulations` accepts a full request batch, not a live stream.** The take-home's
+  input is inherently "the whole request list, known up front, replayed through discrete
+  time without peeking ahead" — the API models that as one call with the full batch (JSON,
+  not the spec's literal CSV) rather than pretending requests arrive over real wall-clock
+  time. "No peek ahead" is still enforced internally: `RequestSource.pop_due(tick)` only
+  ever exposes rows at or before the orchestrator's current tick.
+- **Everything is in-memory, including run tracking.** No database — `SimulationRegistry`
+  and every run's event store live only for the life of the server process; restart loses
+  all history. Deliberate for a take-home; would not survive contact with a real deployment.
+- **No auth, no rate limiting.** Out of scope for the brief; noted so it doesn't read as an
+  oversight.
 
 ## What I'd improve with more time
 
 - SCAN/LOOK-based intra-car ordering instead of greedy-nearest.
-- Persist simulation runs (currently in-memory only, per `SimulationRegistry` design in
-  `CLAUDE.md` — lost on server restart once the API lands).
+- Persist simulation runs and event stores (SQLite or similar) so history survives a
+  restart, and so `SimulationRegistry` isn't a memory leak over a long-lived server process.
 - Bonus schedulers (round robin, zone-based) and express elevators, per the take-home's
   optional section.
+- A lightweight visualization (e.g. a chart of elevator positions over time) for the
+  presentation, per the brief's "feel free to include visualizations" note.

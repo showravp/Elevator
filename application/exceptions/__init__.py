@@ -4,10 +4,12 @@ from application.exceptions.concurrency_conflict_error import ConcurrencyConflic
 from application.exceptions.simulation_did_not_converge_error import (
     SimulationDidNotConvergeError,
 )
+from application.exceptions.simulation_run_not_found_error import SimulationRunNotFoundError
 
 __all__ = [
     "AggregateNotFoundError",
     "ApplicationError",
     "ConcurrencyConflictError",
     "SimulationDidNotConvergeError",
+    "SimulationRunNotFoundError",
 ]

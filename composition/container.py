@@ -1,3 +1,4 @@
+from application.ports import SimulationRegistry
 from application.raw_request import RawRequest
 from composition.application_services import ApplicationServicesContainer
 
@@ -7,8 +8,9 @@ def build_application(
     num_elevators: int,
     num_floors: int,
     elevator_capacity: int,
+    simulation_registry: SimulationRegistry,
 ) -> ApplicationServicesContainer:
-    container = ApplicationServicesContainer()
+    container = ApplicationServicesContainer(simulation_registry=simulation_registry)
     container.config.from_dict(
         {
             "requests": requests,
