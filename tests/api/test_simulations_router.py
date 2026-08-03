@@ -66,6 +66,79 @@ def test_get_position_log_for_unknown_run_returns_404(tmp_path: Path) -> None:
     assert response.status_code == 404
 
 
+def test_create_simulation_rejects_zero_elevators(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {"num_elevators": 0, "num_floors": 10, "elevator_capacity": 4, "requests": []}
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_simulation_rejects_absurdly_many_elevators(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {"num_elevators": 100_000, "num_floors": 10, "elevator_capacity": 4, "requests": []}
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_simulation_rejects_single_floor_building(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {"num_elevators": 1, "num_floors": 1, "elevator_capacity": 4, "requests": []}
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_simulation_rejects_negative_request_fields(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {
+        "num_elevators": 1,
+        "num_floors": 10,
+        "elevator_capacity": 4,
+        "requests": [{"time": -1, "id": "p1", "source": 0, "dest": 5}],
+    }
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_simulation_rejects_empty_passenger_id(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {
+        "num_elevators": 1,
+        "num_floors": 10,
+        "elevator_capacity": 4,
+        "requests": [{"time": 0, "id": "", "source": 0, "dest": 5}],
+    }
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_simulation_rejects_duplicate_passenger_ids(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    payload = {
+        "num_elevators": 1,
+        "num_floors": 10,
+        "elevator_capacity": 4,
+        "requests": [
+            {"time": 0, "id": "p1", "source": 0, "dest": 5},
+            {"time": 1, "id": "p1", "source": 2, "dest": 7},
+        ],
+    }
+
+    response = client.post("/simulations", json=payload)
+
+    assert response.status_code == 422
+    assert "duplicate" in response.text.lower()
+
+
 def test_two_concurrent_runs_stay_isolated(tmp_path: Path) -> None:
     client = _client(tmp_path)
     payload_a = {
