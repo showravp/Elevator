@@ -42,7 +42,11 @@ pip install -e .
 uvicorn api.app:app --reload
 ```
 
-Then open **http://127.0.0.1:8000/docs** for interactive Swagger UI documentation of every
+Defaults to port 8000; pass `--port <N>` to use a different one, e.g.
+`uvicorn api.app:app --reload --port 8080`.
+
+Then open **http://127.0.0.1:8000/docs** (or your chosen port) for interactive Swagger UI
+documentation of every
 endpoint, or drive it directly:
 
 ```bash
