@@ -16,7 +16,7 @@ projections, orchestrator), DI composition root, and a FastAPI service exposing 
 ## Project layout
 
 ```
-domain/          Elevator/Request aggregates, value objects, events, SchedulingPolicy — no I/O
+domain/          Elevator/Request aggregates, value objects, events, ISchedulingPolicy — no I/O
 application/     commands, queries, handlers, process manager, read models, repository
                  interfaces (write and read side), ports, orchestrator
 infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
@@ -84,9 +84,9 @@ TBD — tracked as the project progresses, filled in before final submission.
   not "continue in current direction until no more stops that way, then reverse." Simpler
   to reason about and test; a real destination-dispatch system would do better on average
   travel time with proper SCAN ordering.
-- **Capacity is checked twice, deliberately.** `SchedulingPolicy` filters to elevators with
+- **Capacity is checked twice, deliberately.** `ISchedulingPolicy` filters to elevators with
   headroom before choosing one (so assignment doesn't waste a pick on a full car), and
-  `Elevator.schedule_stop()` independently re-checks and raises `CapacityExceededError` if
+  `Elevator.schedule_stop()` independently re-checks and raises `CapacityExceededException` if
   violated — the aggregate protects its own invariant regardless of what the scheduler does,
   rather than trusting the caller.
 - **A request with no available elevator is deferred, not retried on a fixed timer.** The
@@ -99,9 +99,9 @@ TBD — tracked as the project progresses, filled in before final submission.
   input is inherently "the whole request list, known up front, replayed through discrete
   time without peeking ahead" — the API models that as one call with the full batch (JSON,
   not the spec's literal CSV) rather than pretending requests arrive over real wall-clock
-  time. "No peek ahead" is still enforced internally: `RequestSource.pop_due(tick)` only
+  time. "No peek ahead" is still enforced internally: `IRequestSource.pop_due(tick)` only
   ever exposes rows at or before the orchestrator's current tick.
-- **Everything is in-memory, including run tracking.** No database — `SimulationRegistry`
+- **Everything is in-memory, including run tracking.** No database — `ISimulationRegistry`
   and every run's event store live only for the life of the server process; restart loses
   all history. Deliberate for a take-home; would not survive contact with a real deployment.
 - **No auth, no rate limiting.** Out of scope for the brief; noted so it doesn't read as an
@@ -111,7 +111,7 @@ TBD — tracked as the project progresses, filled in before final submission.
 
 - SCAN/LOOK-based intra-car ordering instead of greedy-nearest.
 - Persist simulation runs and event stores (SQLite or similar) so history survives a
-  restart, and so `SimulationRegistry` isn't a memory leak over a long-lived server process.
+  restart, and so `ISimulationRegistry` isn't a memory leak over a long-lived server process.
 - Bonus schedulers (round robin, zone-based) and express elevators, per the take-home's
   optional section.
 - A lightweight visualization (e.g. a chart of elevator positions over time) for the

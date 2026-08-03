@@ -1,7 +1,7 @@
-from application.exceptions import SimulationDidNotConvergeError
+from application.exceptions import SimulationDidNotConvergeException
 from application.outbox_relay import OutboxRelay
-from application.ports import RequestSource
-from application.repositories import ElevatorRepository, PassengerStatsRepository, RequestRepository
+from application.ports import IRequestSource
+from application.repositories import IElevatorRepository, IPassengerStatsRepository, IRequestRepository
 from domain.aggregates import Elevator, Request
 from domain.value_objects import ElevatorId, Floor, Tick
 
@@ -9,11 +9,11 @@ from domain.value_objects import ElevatorId, Floor, Tick
 class SimulationOrchestrator:
     def __init__(
         self,
-        request_source: RequestSource,
-        elevator_repository: ElevatorRepository,
-        request_repository: RequestRepository,
+        request_source: IRequestSource,
+        elevator_repository: IElevatorRepository,
+        request_repository: IRequestRepository,
         outbox_relay: OutboxRelay,
-        passenger_stats_repository: PassengerStatsRepository,
+        passenger_stats_repository: IPassengerStatsRepository,
         num_elevators: int,
         num_floors: int,
         elevator_capacity: int,
@@ -39,7 +39,7 @@ class SimulationOrchestrator:
         tick = tick.next()
         while self._has_unfinished_work():
             if tick.value > self._max_ticks:
-                raise SimulationDidNotConvergeError(
+                raise SimulationDidNotConvergeException(
                     f"simulation exceeded {self._max_ticks} ticks without all passengers "
                     "being delivered"
                 )
@@ -48,6 +48,12 @@ class SimulationOrchestrator:
 
     def _run_tick(self, tick: Tick) -> None:
         self._submit_due_requests(tick)
+        # Drain here, before movement, so a request submitted this tick can be assigned
+        # (DispatchProcessManager reacts to RequestSubmitted synchronously during drain)
+        # in time to influence this same tick's advance() call — otherwise an elevator
+        # already idling on the requested floor would still wait a full tick before
+        # picking up, inflating every passenger's wait_time by a uniform, avoidable +1.
+        self._outbox_relay.drain()
         self._advance_all_elevators(tick)
         self._outbox_relay.drain()
 

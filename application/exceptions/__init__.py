@@ -1,15 +1,15 @@
-from application.exceptions.aggregate_not_found_error import AggregateNotFoundError
-from application.exceptions.application_error import ApplicationError
-from application.exceptions.concurrency_conflict_error import ConcurrencyConflictError
-from application.exceptions.simulation_did_not_converge_error import (
-    SimulationDidNotConvergeError,
+from application.exceptions.aggregate_not_found_exception import AggregateNotFoundException
+from application.exceptions.application_exception import ApplicationException
+from application.exceptions.concurrency_conflict_exception import ConcurrencyConflictException
+from application.exceptions.simulation_did_not_converge_exception import (
+    SimulationDidNotConvergeException,
 )
-from application.exceptions.simulation_run_not_found_error import SimulationRunNotFoundError
+from application.exceptions.simulation_run_not_found_exception import SimulationRunNotFoundException
 
 __all__ = [
-    "AggregateNotFoundError",
-    "ApplicationError",
-    "ConcurrencyConflictError",
-    "SimulationDidNotConvergeError",
-    "SimulationRunNotFoundError",
+    "AggregateNotFoundException",
+    "ApplicationException",
+    "ConcurrencyConflictException",
+    "SimulationDidNotConvergeException",
+    "SimulationRunNotFoundException",
 ]

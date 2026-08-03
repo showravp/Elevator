@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from application.exceptions import SimulationRunNotFoundError
-from application.ports import SimulationRegistry
+from application.exceptions import SimulationRunNotFoundException
+from application.ports import ISimulationRegistry
 from application.raw_request import RawRequest
 from application.simulation_run import SimulationRun
 from application.simulation_run_id import SimulationRunId
@@ -14,7 +14,7 @@ class RunScope:
     not application logic. `application/` never imports this; it only ever receives an
     already-built orchestrator/handler, injected by whoever calls into it."""
 
-    def __init__(self, registry: SimulationRegistry, output_dir: Path = Path("output")) -> None:
+    def __init__(self, registry: ISimulationRegistry, output_dir: Path = Path("output")) -> None:
         self._registry = registry
         self._output_dir = output_dir
         self._containers: dict[SimulationRunId, ApplicationServicesContainer] = {}
@@ -49,4 +49,4 @@ class RunScope:
         try:
             return self._containers[run_id]
         except KeyError:
-            raise SimulationRunNotFoundError(f"simulation run {run_id.value} not found") from None
+            raise SimulationRunNotFoundException(f"simulation run {run_id.value} not found") from None

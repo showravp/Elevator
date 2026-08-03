@@ -4,7 +4,7 @@ from application.raw_request import RawRequest
 from domain.value_objects import Tick
 
 
-class RequestSource(ABC):
+class IRequestSource(ABC):
     @abstractmethod
     def pop_due(self, tick: Tick) -> list[RawRequest]:
         """Return (and remove) all requests due at or before `tick`. Must never be called

@@ -1,6 +1,6 @@
 import pytest
 
-from application.exceptions import ConcurrencyConflictError
+from application.exceptions import ConcurrencyConflictException
 from domain.events import RequestSubmitted
 from domain.value_objects import Floor, PassengerId, Tick
 from infrastructure.in_memory_event_store import InMemoryEventStore
@@ -32,7 +32,7 @@ def test_append_with_wrong_expected_version_raises_concurrency_conflict() -> Non
     store = InMemoryEventStore()
     store.append("stream-a", expected_version=0, events=[_event()])
 
-    with pytest.raises(ConcurrencyConflictError):
+    with pytest.raises(ConcurrencyConflictException):
         store.append("stream-a", expected_version=0, events=[_event()])
 
 

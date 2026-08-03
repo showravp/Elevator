@@ -1,12 +1,12 @@
 import csv
 from pathlib import Path
 
-from application.ports import PositionLogFileWriter
+from application.ports import IPositionLogFileWriter
 from application.read_models import PositionLogRow
 from application.simulation_run_id import SimulationRunId
 
 
-class CsvPositionLogFileWriter(PositionLogFileWriter):
+class CsvPositionLogFileWriter(IPositionLogFileWriter):
     """Wide format — one row per timestamp, elevator positions as columns — matching the
     take-home brief's literal wording. The JSON API response stays long/tidy (one row per
     tick+elevator pair), which is friendlier to API consumers; this is the file-shaped

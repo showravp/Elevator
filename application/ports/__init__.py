@@ -1,18 +1,18 @@
-from application.ports.event_bus import EventBus, EventHandler
-from application.ports.event_store import EventStore
-from application.ports.outbox_store import OutboxStore
-from application.ports.passenger_stats_file_writer import PassengerStatsFileWriter
-from application.ports.position_log_file_writer import PositionLogFileWriter
-from application.ports.request_source import RequestSource
-from application.ports.simulation_registry import SimulationRegistry
+from application.ports.event_bus import EventHandler, IEventBus
+from application.ports.event_store import IEventStore
+from application.ports.outbox_store import IOutboxStore
+from application.ports.passenger_stats_file_writer import IPassengerStatsFileWriter
+from application.ports.position_log_file_writer import IPositionLogFileWriter
+from application.ports.request_source import IRequestSource
+from application.ports.simulation_registry import ISimulationRegistry
 
 __all__ = [
-    "EventBus",
     "EventHandler",
-    "EventStore",
-    "OutboxStore",
-    "PassengerStatsFileWriter",
-    "PositionLogFileWriter",
-    "RequestSource",
-    "SimulationRegistry",
+    "IEventBus",
+    "IEventStore",
+    "IOutboxStore",
+    "IPassengerStatsFileWriter",
+    "IPositionLogFileWriter",
+    "IRequestSource",
+    "ISimulationRegistry",
 ]

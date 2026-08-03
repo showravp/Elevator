@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from application.outbox_entry import OutboxEntry
 
 
-class OutboxStore(ABC):
+class IOutboxStore(ABC):
     @abstractmethod
     def pending(self) -> list[OutboxEntry]:
         ...

@@ -1,6 +1,6 @@
 import pytest
 
-from application.exceptions import SimulationRunNotFoundError
+from application.exceptions import SimulationRunNotFoundException
 from application.simulation_run_id import SimulationRunId
 from composition.run_scope import RunScope
 from infrastructure.in_memory_simulation_registry import InMemorySimulationRegistry
@@ -19,7 +19,7 @@ def test_create_registers_a_pending_run_and_a_container() -> None:
 def test_get_container_for_unknown_run_raises_not_found() -> None:
     run_scope = RunScope(InMemorySimulationRegistry())
 
-    with pytest.raises(SimulationRunNotFoundError):
+    with pytest.raises(SimulationRunNotFoundException):
         run_scope.get_container(SimulationRunId.generate())
 
 

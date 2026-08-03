@@ -1,13 +1,13 @@
-from domain.exceptions.capacity_exceeded_error import CapacityExceededError
-from domain.exceptions.domain_error import DomainError
-from domain.exceptions.duplicate_assignment_error import DuplicateAssignmentError
-from domain.exceptions.invalid_floor_error import InvalidFloorError
-from domain.exceptions.same_floor_request_error import SameFloorRequestError
+from domain.exceptions.capacity_exceeded_exception import CapacityExceededException
+from domain.exceptions.domain_exception import DomainException
+from domain.exceptions.duplicate_assignment_exception import DuplicateAssignmentException
+from domain.exceptions.invalid_floor_exception import InvalidFloorException
+from domain.exceptions.same_floor_request_exception import SameFloorRequestException
 
 __all__ = [
-    "CapacityExceededError",
-    "DomainError",
-    "DuplicateAssignmentError",
-    "InvalidFloorError",
-    "SameFloorRequestError",
+    "CapacityExceededException",
+    "DomainException",
+    "DuplicateAssignmentException",
+    "InvalidFloorException",
+    "SameFloorRequestException",
 ]

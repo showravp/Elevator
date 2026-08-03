@@ -1,8 +1,8 @@
-from application.ports import EventBus, OutboxStore
+from application.ports import IEventBus, IOutboxStore
 
 
 class OutboxRelay:
-    def __init__(self, outbox_store: OutboxStore, event_bus: EventBus) -> None:
+    def __init__(self, outbox_store: IOutboxStore, event_bus: IEventBus) -> None:
         self._outbox_store = outbox_store
         self._event_bus = event_bus
 

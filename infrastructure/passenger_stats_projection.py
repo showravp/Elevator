@@ -1,16 +1,16 @@
-from application.ports import EventBus
+from application.ports import IEventBus
 from application.read_models import PassengerStatsSummary, PassengerTiming
-from application.repositories import PassengerStatsRepository
+from application.repositories import IPassengerStatsRepository
 from domain.events import PassengerDroppedOff, PassengerPickedUp, RequestSubmitted
 from domain.value_objects import PassengerId, Tick
 
 
-class PassengerStatsProjection(PassengerStatsRepository):
+class PassengerStatsProjection(IPassengerStatsRepository):
     """Same seam as PositionLogProjection: in-memory today, but callers depend on
-    PassengerStatsRepository, so a SQL-backed implementation could replace this without
+    IPassengerStatsRepository, so a SQL-backed implementation could replace this without
     touching the orchestrator or the query handler."""
 
-    def __init__(self, event_bus: EventBus) -> None:
+    def __init__(self, event_bus: IEventBus) -> None:
         self._submitted_at: dict[PassengerId, Tick] = {}
         self._picked_up_at: dict[PassengerId, Tick] = {}
         self._dropped_off_at: dict[PassengerId, Tick] = {}

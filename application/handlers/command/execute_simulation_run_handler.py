@@ -1,7 +1,7 @@
 from application.commands import ExecuteSimulationRunCommand
 from application.orchestrator import SimulationOrchestrator
-from application.ports import PassengerStatsFileWriter, PositionLogFileWriter, SimulationRegistry
-from application.repositories import PassengerStatsRepository, PositionLogRepository
+from application.ports import IPassengerStatsFileWriter, IPositionLogFileWriter, ISimulationRegistry
+from application.repositories import IPassengerStatsRepository, IPositionLogRepository
 from application.simulation_status import SimulationStatus
 
 
@@ -9,11 +9,11 @@ class ExecuteSimulationRunHandler:
     def __init__(
         self,
         orchestrator: SimulationOrchestrator,
-        registry: SimulationRegistry,
-        position_log_repository: PositionLogRepository,
-        passenger_stats_repository: PassengerStatsRepository,
-        position_log_file_writer: PositionLogFileWriter,
-        passenger_stats_file_writer: PassengerStatsFileWriter,
+        registry: ISimulationRegistry,
+        position_log_repository: IPositionLogRepository,
+        passenger_stats_repository: IPassengerStatsRepository,
+        position_log_file_writer: IPositionLogFileWriter,
+        passenger_stats_file_writer: IPassengerStatsFileWriter,
     ) -> None:
         self._orchestrator = orchestrator
         self._registry = registry

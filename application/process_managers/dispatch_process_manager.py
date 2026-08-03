@@ -1,7 +1,7 @@
-from application.ports import EventBus
-from application.repositories import ElevatorRepository, RequestRepository
+from application.ports import IEventBus
+from application.repositories import IElevatorRepository, IRequestRepository
 from domain.events import PassengerDroppedOff, RequestSubmitted
-from domain.services import SchedulingPolicy
+from domain.services import ISchedulingPolicy
 from domain.value_objects import PassengerId, Tick
 
 
@@ -14,10 +14,10 @@ class DispatchProcessManager:
 
     def __init__(
         self,
-        elevator_repository: ElevatorRepository,
-        request_repository: RequestRepository,
-        scheduling_policy: SchedulingPolicy,
-        event_bus: EventBus,
+        elevator_repository: IElevatorRepository,
+        request_repository: IRequestRepository,
+        scheduling_policy: ISchedulingPolicy,
+        event_bus: IEventBus,
     ) -> None:
         self._elevator_repository = elevator_repository
         self._request_repository = request_repository

@@ -4,10 +4,10 @@ from domain.aggregates import Elevator
 from domain.value_objects import ElevatorId
 
 
-class ElevatorRepository(ABC):
+class IElevatorRepository(ABC):
     @abstractmethod
     def get(self, elevator_id: ElevatorId) -> Elevator:
-        """Raises AggregateNotFoundError if no such elevator has ever been saved."""
+        """Raises AggregateNotFoundException if no such elevator has ever been saved."""
 
     @abstractmethod
     def save(self, elevator: Elevator) -> None:

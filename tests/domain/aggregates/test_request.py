@@ -1,7 +1,7 @@
 import pytest
 
 from domain.aggregates import Request
-from domain.exceptions import DuplicateAssignmentError, InvalidFloorError, SameFloorRequestError
+from domain.exceptions import DuplicateAssignmentException, InvalidFloorException, SameFloorRequestException
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 
 
@@ -28,12 +28,12 @@ def test_submit_sets_initial_state_and_is_unassigned() -> None:
 
 
 def test_submit_rejects_same_source_and_destination() -> None:
-    with pytest.raises(SameFloorRequestError):
+    with pytest.raises(SameFloorRequestException):
         Request.submit(PassengerId("p1"), Floor(3), Floor(3), num_floors=10, tick=Tick(0))
 
 
 def test_submit_rejects_out_of_bounds_floor() -> None:
-    with pytest.raises(InvalidFloorError):
+    with pytest.raises(InvalidFloorException):
         Request.submit(PassengerId("p1"), Floor(1), Floor(50), num_floors=10, tick=Tick(0))
 
 
@@ -50,7 +50,7 @@ def test_assign_twice_raises_duplicate_assignment_error() -> None:
     request = _submitted_request()
     request.assign(ElevatorId(2), tick=Tick(1))
 
-    with pytest.raises(DuplicateAssignmentError):
+    with pytest.raises(DuplicateAssignmentException):
         request.assign(ElevatorId(3), tick=Tick(2))
 
 
