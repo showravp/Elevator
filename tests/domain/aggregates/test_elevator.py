@@ -15,7 +15,7 @@ def _provisioned_elevator(capacity: int = 4, num_floors: int = 10) -> Elevator:
     )
 
 
-def test_provision_sets_initial_state_and_emits_two_events() -> None:
+def test_provision_sets_initial_state_and_emits_one_event() -> None:
     elevator = _provisioned_elevator()
 
     assert elevator.id == ElevatorId(0)
@@ -23,8 +23,8 @@ def test_provision_sets_initial_state_and_emits_two_events() -> None:
     assert elevator.direction is Direction.IDLE
     assert elevator.onboard_count == 0
     assert elevator.pending_pickup_count == 0
-    assert len(elevator.uncommitted_events) == 2
-    assert elevator.version == 2
+    assert len(elevator.uncommitted_events) == 1
+    assert elevator.version == 1
 
 
 def test_provision_rejects_out_of_bounds_starting_floor() -> None:

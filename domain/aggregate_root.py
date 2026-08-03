@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, Self, TypeVar
 
 TEvent = TypeVar("TEvent")
 TId = TypeVar("TId")
@@ -38,7 +38,7 @@ class AggregateRoot(ABC, Generic[TEvent, TId]):
     def apply(self, event: TEvent) -> None: ...
 
     @classmethod
-    def replay(cls, events: list[TEvent]) -> "AggregateRoot[TEvent, TId]":
+    def replay(cls, events: list[TEvent]) -> Self:
         aggregate = cls.__new__(cls)
         AggregateRoot.__init__(aggregate)
         for event in events:
