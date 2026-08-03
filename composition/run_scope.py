@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from application.exceptions import SimulationRunNotFoundError
 from application.ports import SimulationRegistry
 from application.raw_request import RawRequest
@@ -12,8 +14,9 @@ class RunScope:
     not application logic. `application/` never imports this; it only ever receives an
     already-built orchestrator/handler, injected by whoever calls into it."""
 
-    def __init__(self, registry: SimulationRegistry) -> None:
+    def __init__(self, registry: SimulationRegistry, output_dir: Path = Path("output")) -> None:
         self._registry = registry
+        self._output_dir = output_dir
         self._containers: dict[SimulationRunId, ApplicationServicesContainer] = {}
 
     def create(
@@ -38,6 +41,7 @@ class RunScope:
             num_floors=num_floors,
             elevator_capacity=elevator_capacity,
             simulation_registry=self._registry,
+            output_dir=self._output_dir,
         )
         return run_id
 

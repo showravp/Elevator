@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from application.ports import SimulationRegistry
 from application.raw_request import RawRequest
 from composition.application_services import ApplicationServicesContainer
@@ -9,6 +11,7 @@ def build_application(
     num_floors: int,
     elevator_capacity: int,
     simulation_registry: SimulationRegistry,
+    output_dir: Path = Path("output"),
 ) -> ApplicationServicesContainer:
     container = ApplicationServicesContainer(simulation_registry=simulation_registry)
     container.config.from_dict(
@@ -17,6 +20,7 @@ def build_application(
             "num_elevators": num_elevators,
             "num_floors": num_floors,
             "elevator_capacity": elevator_capacity,
+            "output_dir": output_dir,
         }
     )
     # Event-bus subscribers must exist before the orchestrator starts publishing, so they
