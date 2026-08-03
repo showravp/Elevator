@@ -49,6 +49,10 @@ class ApplicationServicesContainer(containers.DeclarativeContainer):
         ExecuteSimulationRunHandler,
         orchestrator=orchestrator,
         registry=simulation_registry,
+        position_log_repository=infrastructure.position_log_projection,
+        passenger_stats_repository=infrastructure.passenger_stats_projection,
+        position_log_file_writer=infrastructure.position_log_file_writer,
+        passenger_stats_file_writer=infrastructure.passenger_stats_file_writer,
     )
     position_log_query_handler = providers.Singleton(
         GetPositionLogHandler, repository=infrastructure.position_log_projection

@@ -1,17 +1,20 @@
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from api.app import create_app
 
 
-def _client() -> TestClient:
+def _client(output_dir: Path) -> TestClient:
     # TestClient runs BackgroundTasks synchronously as part of the request/response
     # cycle, so by the time .post() returns, the simulation has already finished running
-    # — no polling needed in these tests.
-    return TestClient(create_app())
+    # — no polling needed in these tests. output_dir is redirected to a pytest tmp_path so
+    # these tests never write into the real repo's output/ directory.
+    return TestClient(create_app(output_dir=output_dir))
 
 
-def test_create_and_complete_simulation_end_to_end() -> None:
-    client = _client()
+def test_create_and_complete_simulation_end_to_end(tmp_path: Path) -> None:
+    client = _client(tmp_path)
     payload = {
         "num_elevators": 2,
         "num_floors": 10,
@@ -43,25 +46,28 @@ def test_create_and_complete_simulation_end_to_end() -> None:
     assert len(rows) > 0
     assert {row["elevator_id"] for row in rows} == {0, 1}
 
+    assert (tmp_path / run_id / "position_log.csv").exists()
+    assert (tmp_path / run_id / "passenger_stats.csv").exists()
 
-def test_get_status_for_unknown_run_returns_404() -> None:
-    client = _client()
+
+def test_get_status_for_unknown_run_returns_404(tmp_path: Path) -> None:
+    client = _client(tmp_path)
 
     response = client.get("/simulations/does-not-exist")
 
     assert response.status_code == 404
 
 
-def test_get_position_log_for_unknown_run_returns_404() -> None:
-    client = _client()
+def test_get_position_log_for_unknown_run_returns_404(tmp_path: Path) -> None:
+    client = _client(tmp_path)
 
     response = client.get("/simulations/does-not-exist/position-log")
 
     assert response.status_code == 404
 
 
-def test_two_concurrent_runs_stay_isolated() -> None:
-    client = _client()
+def test_two_concurrent_runs_stay_isolated(tmp_path: Path) -> None:
+    client = _client(tmp_path)
     payload_a = {
         "num_elevators": 1,
         "num_floors": 10,

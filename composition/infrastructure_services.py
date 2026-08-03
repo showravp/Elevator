@@ -1,5 +1,7 @@
 from dependency_injector import containers, providers
 
+from infrastructure.csv_passenger_stats_file_writer import CsvPassengerStatsFileWriter
+from infrastructure.csv_position_log_file_writer import CsvPositionLogFileWriter
 from infrastructure.event_sourced_elevator_repository import EventSourcedElevatorRepository
 from infrastructure.event_sourced_request_repository import EventSourcedRequestRepository
 from infrastructure.in_memory_event_bus import InMemoryEventBus
@@ -33,4 +35,11 @@ class InfrastructureServicesContainer(containers.DeclarativeContainer):
     position_log_projection = providers.Singleton(PositionLogProjection, event_bus=event_bus)
     passenger_stats_projection = providers.Singleton(
         PassengerStatsProjection, event_bus=event_bus
+    )
+
+    position_log_file_writer = providers.Singleton(
+        CsvPositionLogFileWriter, output_dir=config.output_dir
+    )
+    passenger_stats_file_writer = providers.Singleton(
+        CsvPassengerStatsFileWriter, output_dir=config.output_dir
     )
