@@ -66,7 +66,7 @@ def _build_handler(
 def test_handle_marks_run_completed_on_success() -> None:
     registry = InMemorySimulationRegistry()
     run_id = SimulationRunId.generate()
-    registry.add(SimulationRun(id=run_id, num_elevators=1, num_floors=10, elevator_capacity=1))
+    registry.add(SimulationRun(id=run_id))
     orchestrator = _StubOrchestrator()
     handler = _build_handler(orchestrator, registry)
 
@@ -79,7 +79,7 @@ def test_handle_marks_run_completed_on_success() -> None:
 def test_handle_writes_position_log_and_passenger_stats_files_on_success() -> None:
     registry = InMemorySimulationRegistry()
     run_id = SimulationRunId.generate()
-    registry.add(SimulationRun(id=run_id, num_elevators=1, num_floors=10, elevator_capacity=1))
+    registry.add(SimulationRun(id=run_id))
     position_writer = _RecordingFileWriter()
     stats_writer = _RecordingFileWriter()
     handler = _build_handler(_StubOrchestrator(), registry, position_writer, stats_writer)
@@ -93,7 +93,7 @@ def test_handle_writes_position_log_and_passenger_stats_files_on_success() -> No
 def test_handle_marks_run_failed_with_error_message_on_exception() -> None:
     registry = InMemorySimulationRegistry()
     run_id = SimulationRunId.generate()
-    registry.add(SimulationRun(id=run_id, num_elevators=1, num_floors=10, elevator_capacity=1))
+    registry.add(SimulationRun(id=run_id))
     orchestrator = _StubOrchestrator(raise_error=ValueError("boom"))
     handler = _build_handler(orchestrator, registry)
 
@@ -107,7 +107,7 @@ def test_handle_marks_run_failed_with_error_message_on_exception() -> None:
 def test_handle_marks_run_failed_when_file_writing_fails() -> None:
     registry = InMemorySimulationRegistry()
     run_id = SimulationRunId.generate()
-    registry.add(SimulationRun(id=run_id, num_elevators=1, num_floors=10, elevator_capacity=1))
+    registry.add(SimulationRun(id=run_id))
     failing_writer = _RecordingFileWriter(raise_error=OSError("disk full"))
     handler = _build_handler(_StubOrchestrator(), registry, failing_writer)
 
@@ -121,7 +121,7 @@ def test_handle_marks_run_failed_when_file_writing_fails() -> None:
 def test_run_status_is_running_while_orchestrator_executes() -> None:
     registry = InMemorySimulationRegistry()
     run_id = SimulationRunId.generate()
-    registry.add(SimulationRun(id=run_id, num_elevators=1, num_floors=10, elevator_capacity=1))
+    registry.add(SimulationRun(id=run_id))
     observed_status = {}
 
     class _ObservingOrchestrator:

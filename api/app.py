@@ -4,12 +4,16 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from api.routers.simulations import router as simulations_router
-from application.exceptions import SimulationRunNotFoundException
+from application.exceptions import SimulationConflictException, SimulationRunNotFoundException
 from composition.api_bootstrap import bootstrap_api_state
 
 
 def _handle_not_found(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+def _handle_conflict(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
 def create_app(output_dir: Path = Path("output")) -> FastAPI:
@@ -26,6 +30,10 @@ def create_app(output_dir: Path = Path("output")) -> FastAPI:
     # as a "use", so it reads as dead code under strict checking. This explicit call form
     # is equally idiomatic FastAPI and makes the registration visible to the type checker.
     app.add_exception_handler(SimulationRunNotFoundException, _handle_not_found)
+    # Registered on the base class — catches SimulationConfigLockedException and
+    # SimulationRequestsAlreadySubmittedException (and any future conflict subclass)
+    # without needing a handler per concrete exception.
+    app.add_exception_handler(SimulationConflictException, _handle_conflict)
 
     return app
 
