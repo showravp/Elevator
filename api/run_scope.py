@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from api.container import build_application
+from api.program import build_application
 from application.dependency_injection import ApplicationServicesContainer
 from application.exceptions import SimulationRunNotFoundException
 from application.ports import ISimulationRegistry

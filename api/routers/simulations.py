@@ -1,6 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 
-from api.dependencies import get_run_scope, get_simulation_registry, get_simulation_status_handler
 from api.run_scope import RunScope
 from api.schemas import (
     PassengerStatsResponse,
@@ -10,6 +9,7 @@ from api.schemas import (
     SimulationStatusResponse,
     SubmitRequestsBody,
 )
+from api.services import get_run_scope, get_simulation_registry, get_simulation_status_handler
 from application.commands import ExecuteSimulationRunCommand
 from application.exceptions import (
     SimulationConfigLockedException,

@@ -60,27 +60,34 @@ for the follow-up presentation — not because the problem size alone demands it
   `infrastructure/dependency_injection.py` (`InfrastructureServicesContainer`) — mirroring
   the .NET convention of a `DependencyInjection.cs` per project, rather than centralizing
   all container definitions in one place. There is no separate `composition/` package —
-  `api/container.py`'s `build_application()` is the composition root, living directly in
-  `api/` the same way a .NET Web API project's `Program.cs` *is* the composition root
-  rather than living in its own project: it's the only place that constructs
+  the composition root lives directly in `api/`, split across four files the same way a
+  .NET minimal-API project splits `Program.cs`-equivalent responsibilities:
+  `api/program.py`'s `build_application()` builds the per-run object graph (constructs
   `InfrastructureServicesContainer` and wires its concrete instances into
-  `ApplicationServicesContainer`'s `providers.Dependency(instance_of=...)` slots.
-  `ApplicationServicesContainer` itself never imports `infrastructure` — every port it needs
-  but can't construct is a typed `Dependency` slot, supplied from `api/container.py`, so the
-  Dependency Rule holds for the DI wiring files exactly as strictly as for the rest of the
-  app. (It *does* import `domain/dependency_injection.py` directly — application depending
-  on domain, the allowed direction.) Per-run isolation is one `ApplicationServicesContainer`
-  + one `InfrastructureServicesContainer` instance built per simulation run inside
-  `build_application()`, tracked by `api/run_scope.py`. `api/bootstrap.py` builds the one
-  process-wide `ISimulationRegistry`. Within `api/`, only `container.py` and `bootstrap.py`
-  import `infrastructure` directly — routers and schemas never do, same separation as
-  before, just enforced by file boundary within one package instead of by a separate
-  package; this mirrors how Controllers in a .NET Web API project never reference
-  Infrastructure concrete types even though `Program.cs`, in the same project, does. Pyright's
-  dependency-injector stub-quality relaxation (`reportUnknownMemberType`) is scoped
-  file-by-file in `pyproject.toml` to wherever a `Provider[Unknown]` actually surfaces, not
-  blanket per layer — currently just `application/dependency_injection.py`'s
-  nested-container attribute access (`domain.scheduling_policy`).
+  `ApplicationServicesContainer`'s `providers.Dependency(instance_of=...)` slots);
+  `api/run_scope.py`'s `RunScope` tracks per-run container lifecycle (kept in its own file,
+  not folded into `program.py`, because it's a genuine class — the one-class-per-file rule
+  below still applies to it; folding it in would also create a real import cycle, since
+  `RunScope` needs `build_application` and `bootstrap_api_state` needs `RunScope`'s type —
+  the acyclic order is `program.py` → `run_scope.py` → `app.py`); `api/app.py`'s
+  `bootstrap_api_state()` builds the one process-wide `ISimulationRegistry`/`RunScope`/
+  status handler, and its `create_app()` assembles the FastAPI app — genuinely the same
+  file .NET's `Program.cs` would be, since minimal APIs bundle "register services" and
+  "configure the app" together; `api/services.py` holds the `Depends()` provider functions
+  (FastAPI's equivalent of resolving from `IServiceProvider`). `ApplicationServicesContainer`
+  itself never imports `infrastructure` — every port it needs but can't construct is a typed
+  `Dependency` slot, supplied from `api/program.py`, so the Dependency Rule holds for the DI
+  wiring files exactly as strictly as for the rest of the app. (It *does* import
+  `domain/dependency_injection.py` directly — application depending on domain, the allowed
+  direction.) Within `api/`, only `program.py` and `app.py` import `infrastructure`
+  directly — routers and schemas never do, same separation as before, just enforced by file
+  boundary within one package instead of by a separate package; this mirrors how
+  Controllers in a .NET Web API project never reference Infrastructure concrete types even
+  though `Program.cs`, in the same project, does. Pyright's dependency-injector
+  stub-quality relaxation (`reportUnknownMemberType`) is scoped file-by-file in
+  `pyproject.toml` to wherever a `Provider[Unknown]` actually surfaces, not blanket per
+  layer — currently just `application/dependency_injection.py`'s nested-container attribute
+  access (`domain.scheduling_policy`).
 - **File convention**: one class (including enums/exceptions) per `.py` file, with
   `__init__.py` re-exports per package for ergonomic imports. Exempt: FastAPI router modules
   and DI-wiring modules, which group functions, not classes — splitting those would fight
@@ -92,8 +99,8 @@ depending on concrete projection classes instead of repository ports; `api/app.p
 also constructing infrastructure directly instead of going through the composition root) →
 `clean-architecture-di` (aggregate repository interfaces moved to `domain/`; DI
 registration moved from a separate `composition/` package into a `dependency_injection.py`
-per layer, composition root folded into `api/`), then bonus schedulers/express-elevators as
-later branches.
+per layer, composition root folded into `api/` as `program.py`/`run_scope.py`/`app.py`/
+`services.py`), then bonus schedulers/express-elevators as later branches.
 
 ## Workflow
 
@@ -129,8 +136,8 @@ infrastructure/  in-memory event store/bus/registry, event-sourced repositories,
                  (dependency_injection.py) — all swappable for a real database without
                  touching application/ or domain/
 api/             FastAPI app, routers, pydantic schemas, AND the composition root
-                 (container.py/run_scope.py/bootstrap.py) — the only presentation layer,
-                 and the only place infrastructure gets constructed; no separate
+                 (program.py/run_scope.py/app.py/services.py) — the only presentation
+                 layer, and the only place infrastructure gets constructed; no separate
                  composition/ package, same as a .NET Web API project's Program.cs
 tests/           mirrors the tree above
 README.md        run instructions, assumptions, trade-offs (kept current as the project evolves)

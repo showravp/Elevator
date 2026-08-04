@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from api.bootstrap import bootstrap_api_state
+from api.app import bootstrap_api_state
 from application.handlers.query import GetSimulationStatusHandler
 from application.queries import GetSimulationStatusQuery
 from application.simulation_config import SimulationConfig

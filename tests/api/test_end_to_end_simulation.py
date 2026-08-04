@@ -1,4 +1,4 @@
-from api.container import build_application
+from api.program import build_application
 from application.queries import GetPassengerStatsQuery, GetPositionLogQuery
 from application.raw_request import RawRequest
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
