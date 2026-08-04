@@ -53,7 +53,14 @@ for the follow-up presentation — not because the problem size alone demands it
   returns `202 {id, status}` via `BackgroundTasks`, results polled via `GET /simulations/{id}`
   and `GET /simulations/{id}/position-log` | `/passenger-stats`. Each run gets an isolated
   `IEventStore`/`IEventBus`/repositories/read models via a DI child scope, keyed in an
-  in-memory `ISimulationRegistry` (does not persist across server restarts).
+  in-memory `ISimulationRegistry` (does not persist across server restarts). Request/response
+  DTOs live in a separate top-level `contracts/` package, not in `api/` and not in `domain/`
+  — mirroring a .NET solution splitting request/response models into their own `Contracts`
+  project (e.g. so a client SDK could depend on just the wire shapes without pulling in the
+  whole Web API). `contracts/` has zero imports from any other layer — only `api/`
+  (specifically `api/controllers/`) depends on it, converting between contracts and
+  domain/application types (e.g. `SimulationConfigBody` → `SimulationConfig`) at the
+  controller boundary; that conversion logic stays in `api/`, not in `contracts/` itself.
 - **DI**: `dependency-injector` library. Each layer owns its own DI registration file —
   `domain/dependency_injection.py` (`DomainServicesContainer`),
   `application/dependency_injection.py` (`ApplicationServicesContainer`),
@@ -80,7 +87,7 @@ for the follow-up presentation — not because the problem size alone demands it
   wiring files exactly as strictly as for the rest of the app. (It *does* import
   `domain/dependency_injection.py` directly — application depending on domain, the allowed
   direction.) Within `api/`, only `program.py` and `app.py` import `infrastructure`
-  directly — routers and schemas never do, same separation as before, just enforced by file
+  directly — controllers never do, same separation as before, just enforced by file
   boundary within one package instead of by a separate package; this mirrors how
   Controllers in a .NET Web API project never reference Infrastructure concrete types even
   though `Program.cs`, in the same project, does. Pyright's dependency-injector
@@ -89,9 +96,10 @@ for the follow-up presentation — not because the problem size alone demands it
   layer — currently just `application/dependency_injection.py`'s nested-container attribute
   access (`domain.scheduling_policy`).
 - **File convention**: one class (including enums/exceptions) per `.py` file, with
-  `__init__.py` re-exports per package for ergonomic imports. Exempt: FastAPI router modules
-  and DI-wiring modules, which group functions, not classes — splitting those would fight
-  the framework's own idiom rather than add clarity.
+  `__init__.py` re-exports per package for ergonomic imports. Exempt: FastAPI controller
+  modules and DI-wiring modules, which group functions, not classes — splitting those would
+  fight the framework's own idiom rather than add clarity. `contracts/` follows the normal
+  rule (one Pydantic model per file) since each is a genuine class.
 
 Build sequence (each its own `spodder/` branch): `domain-core` → `event-sourcing-infra` →
 `api` → `read-repository-pattern` (audit fix: query handlers and the orchestrator were
@@ -100,7 +108,9 @@ also constructing infrastructure directly instead of going through the compositi
 `clean-architecture-di` (aggregate repository interfaces moved to `domain/`; DI
 registration moved from a separate `composition/` package into a `dependency_injection.py`
 per layer, composition root folded into `api/` as `program.py`/`run_scope.py`/`app.py`/
-`services.py`), then bonus schedulers/express-elevators as later branches.
+`services.py`; request/response DTOs extracted from `api/schemas/` into a new top-level
+`contracts/` package; `api/routers/` renamed to `api/controllers/`), then bonus
+schedulers/express-elevators as later branches.
 
 ## Workflow
 
@@ -135,10 +145,12 @@ infrastructure/  in-memory event store/bus/registry, event-sourced repositories,
                  projections (event-driven read-model writers), own DI registration
                  (dependency_injection.py) — all swappable for a real database without
                  touching application/ or domain/
-api/             FastAPI app, routers, pydantic schemas, AND the composition root
-                 (program.py/run_scope.py/app.py/services.py) — the only presentation
-                 layer, and the only place infrastructure gets constructed; no separate
-                 composition/ package, same as a .NET Web API project's Program.cs
+contracts/       request/response DTOs (pydantic models) — no dependency on any other
+                 layer; only api/controllers/ depends on it
+api/             FastAPI app, controllers, AND the composition root (program.py/
+                 run_scope.py/app.py/services.py) — the only presentation layer, and the
+                 only place infrastructure gets constructed; no separate composition/
+                 package, same as a .NET Web API project's Program.cs
 tests/           mirrors the tree above
 README.md        run instructions, assumptions, trade-offs (kept current as the project evolves)
 ```

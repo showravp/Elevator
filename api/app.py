@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from api.routers.simulations import router as simulations_router
+from api.controllers.simulations import router as simulations_router
 from api.run_scope import RunScope
 from application.exceptions import SimulationConflictException, SimulationRunNotFoundException
 from application.handlers.query import GetSimulationStatusHandler
@@ -17,9 +17,9 @@ def bootstrap_api_state(
 ) -> tuple[ISimulationRegistry, RunScope, GetSimulationStatusHandler]:
     """Process-wide state for the life of the server: one registry, one RunScope, one
     status query handler. This — together with api/program.py's build_application() — is
-    where infrastructure concrete classes get constructed for the API; routers and schemas
-    never do, same rule as everywhere else in the app, just enforced by file boundary
-    within api/ rather than by a separate composition/ package. api/routers/ only ever
+    where infrastructure concrete classes get constructed for the API; controllers never
+    do, same rule as everywhere else in the app, just enforced by file boundary within
+    api/ rather than by a separate composition/ package. api/controllers/ only ever
     receives already-built instances via app.state, never builds its own."""
     registry = InMemorySimulationRegistry()
     config_repository = CsvConfigRepository(output_dir=output_dir)

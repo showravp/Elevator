@@ -23,8 +23,9 @@ application/     commands, queries, handlers, process manager, read models, read
                  repository interfaces, ports, orchestrator
 infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
                  projections (event-driven read-model writers) — swappable for a real DB
-api/             FastAPI app, routers, pydantic schemas, and the composition root that
-                 wires each layer's own DI container together — the only presentation layer
+contracts/       request/response DTOs (pydantic models) — no dependency on any other layer
+api/             FastAPI app, controllers, and the composition root that wires each layer's
+                 own DI container together — the only presentation layer
 tests/           mirrors the tree above
 ```
 

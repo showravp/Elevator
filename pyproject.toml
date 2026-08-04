@@ -10,13 +10,13 @@ requires-python = ">=3.13"
 dependencies = []
 
 [tool.setuptools.packages.find]
-include = ["domain*", "application*", "infrastructure*", "api*"]
+include = ["domain*", "application*", "infrastructure*", "api*", "contracts*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.pyright]
-include = ["domain", "application", "infrastructure", "api", "tests"]
+include = ["domain", "application", "infrastructure", "api", "contracts", "tests"]
 exclude = ["**/__pycache__", ".venv"]
 venvPath = "."
 venv = ".venv"
@@ -58,7 +58,7 @@ target-version = "py313"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["domain", "application", "infrastructure", "api"]
+known-first-party = ["domain", "application", "infrastructure", "api", "contracts"]
 
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI's own DI pattern (`param: T = Depends(get_t)`) is the idiomatic way to declare
