@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from api.program import build_application
+from application.dependency_injection import ApplicationServicesContainer
 from application.exceptions import SimulationRunNotFoundException
 from application.ports import ISimulationRegistry
 from application.raw_request import RawRequest
@@ -7,8 +9,6 @@ from application.repositories import IConfigRepository
 from application.simulation_config import SimulationConfig
 from application.simulation_run import SimulationRun
 from application.simulation_run_id import SimulationRunId
-from composition.application_services import ApplicationServicesContainer
-from composition.container import build_application
 
 
 class RunScope:

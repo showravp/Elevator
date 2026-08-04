@@ -1,6 +1,6 @@
+from api.program import build_application
 from application.queries import GetPassengerStatsQuery, GetPositionLogQuery
 from application.raw_request import RawRequest
-from composition.container import build_application
 from domain.value_objects import ElevatorId, Floor, PassengerId, Tick
 from infrastructure.in_memory_simulation_registry import InMemorySimulationRegistry
 

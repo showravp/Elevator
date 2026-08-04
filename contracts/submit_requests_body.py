@@ -1,6 +1,6 @@
 from pydantic import BaseModel, model_validator
 
-from api.schemas.request_dto import RequestDTO
+from contracts.request_dto import RequestDTO
 
 
 class SubmitRequestsBody(BaseModel):

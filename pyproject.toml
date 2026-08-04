@@ -10,13 +10,13 @@ requires-python = ">=3.13"
 dependencies = []
 
 [tool.setuptools.packages.find]
-include = ["domain*", "application*", "infrastructure*", "api*", "composition*"]
+include = ["domain*", "application*", "infrastructure*", "api*", "contracts*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.pyright]
-include = ["domain", "application", "infrastructure", "api", "composition", "tests"]
+include = ["domain", "application", "infrastructure", "api", "contracts", "tests"]
 exclude = ["**/__pycache__", ".venv"]
 venvPath = "."
 venv = ".venv"
@@ -31,25 +31,19 @@ pythonVersion = "3.13"
 # venvPath/venv are NOT valid executionEnvironment keys (pyright warns and ignores them
 # here) — they only apply at the top level, which already covers every environment.
 [[tool.pyright.executionEnvironments]]
-# dependency-injector's own type stubs don't propagate concrete Provider types, so every
-# provider access in composition/ (and any test exercising the built containers directly)
-# reports as partially-Unknown regardless of how our code is written.
-root = "composition"
+# dependency-injector's own type stubs don't propagate concrete Provider types, isolated to
+# this one file: this is where each layer now owns its DI registration (domain/,
+# infrastructure/ don't hit it — only application/dependency_injection.py's
+# nested-container attribute access, e.g. `domain.scheduling_policy`, triggers it).
+root = "application/dependency_injection.py"
 extraPaths = ["."]
 reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownArgumentType = false
-
-[[tool.pyright.executionEnvironments]]
-root = "tests/composition"
-extraPaths = ["."]
-reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownArgumentType = false
 
 [[tool.pyright.executionEnvironments]]
 # Starlette's TestClient / httpx have the same imprecise-stub issue for .post()/.get()
-# response typing — everything downstream of a response object reports as Unknown.
+# response typing — everything downstream of a response object reports as Unknown. Also
+# covers the former tests/composition/ suite (now here too): dependency-injector's own
+# Provider[Unknown] gap for tests exercising built containers directly.
 root = "tests/api"
 extraPaths = ["."]
 reportUnknownMemberType = false
@@ -64,7 +58,7 @@ target-version = "py313"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["domain", "application", "infrastructure", "api", "composition"]
+known-first-party = ["domain", "application", "infrastructure", "api", "contracts"]
 
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI's own DI pattern (`param: T = Depends(get_t)`) is the idiomatic way to declare
