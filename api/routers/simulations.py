@@ -1,6 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from api.dependencies import get_run_scope, get_simulation_registry, get_simulation_status_handler
+from api.run_scope import RunScope
 from api.schemas import (
     PassengerStatsResponse,
     PositionLogResponse,
@@ -25,7 +26,6 @@ from application.raw_request import RawRequest
 from application.simulation_config import SimulationConfig
 from application.simulation_run_id import SimulationRunId
 from application.simulation_status import SimulationStatus
-from composition.run_scope import RunScope
 from domain.value_objects import Floor, PassengerId, Tick
 
 router = APIRouter(prefix="/simulations", tags=["simulations"])

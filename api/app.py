@@ -3,9 +3,9 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from api.bootstrap import bootstrap_api_state
 from api.routers.simulations import router as simulations_router
 from application.exceptions import SimulationConflictException, SimulationRunNotFoundException
-from composition.api_bootstrap import bootstrap_api_state
 
 
 def _handle_not_found(request: Request, exc: Exception) -> JSONResponse:

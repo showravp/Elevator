@@ -1,7 +1,7 @@
 from application.exceptions import AggregateNotFoundException
 from application.ports import IEventStore
-from application.repositories import IElevatorRepository
 from domain.aggregates import Elevator
+from domain.repositories import IElevatorRepository
 from domain.value_objects import ElevatorId
 
 

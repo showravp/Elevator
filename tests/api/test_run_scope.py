@@ -2,11 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from api.run_scope import RunScope
 from application.exceptions import ConfigNotFoundException, SimulationRunNotFoundException
 from application.simulation_config import SimulationConfig
 from application.simulation_run import SimulationRun
 from application.simulation_run_id import SimulationRunId
-from composition.run_scope import RunScope
 from infrastructure.csv_config_repository import CsvConfigRepository
 from infrastructure.in_memory_simulation_registry import InMemorySimulationRegistry
 

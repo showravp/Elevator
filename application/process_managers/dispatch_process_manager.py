@@ -1,6 +1,6 @@
 from application.ports import IEventBus
-from application.repositories import IElevatorRepository, IRequestRepository
 from domain.events import PassengerDroppedOff, RequestSubmitted
+from domain.repositories import IElevatorRepository, IRequestRepository
 from domain.services import ElevatorAssigned, ISchedulingPolicy, NoElevatorAvailable
 from domain.value_objects import PassengerId, Tick
 

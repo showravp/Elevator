@@ -1,12 +1,9 @@
 from application.exceptions import SimulationDidNotConvergeException
 from application.outbox_relay import OutboxRelay
 from application.ports import IRequestSource
-from application.repositories import (
-    IElevatorRepository,
-    IPassengerStatsRepository,
-    IRequestRepository,
-)
+from application.repositories import IPassengerStatsRepository
 from domain.aggregates import Elevator, Request
+from domain.repositories import IElevatorRepository, IRequestRepository
 from domain.value_objects import ElevatorId, Floor, Tick
 
 

@@ -1,9 +1,9 @@
 from pathlib import Path
 
+from api.bootstrap import bootstrap_api_state
 from application.handlers.query import GetSimulationStatusHandler
 from application.queries import GetSimulationStatusQuery
 from application.simulation_config import SimulationConfig
-from composition.api_bootstrap import bootstrap_api_state
 from infrastructure.in_memory_simulation_registry import InMemorySimulationRegistry
 
 _CONFIG = SimulationConfig(num_elevators=1, num_floors=5, elevator_capacity=1)

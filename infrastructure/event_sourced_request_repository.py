@@ -1,7 +1,7 @@
 from application.exceptions import AggregateNotFoundException
 from application.ports import IEventStore
-from application.repositories import IRequestRepository
 from domain.aggregates import Request
+from domain.repositories import IRequestRepository
 from domain.value_objects import PassengerId
 
 

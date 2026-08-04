@@ -17,13 +17,14 @@ the full architecture and build sequence.
 ## Project layout
 
 ```
-domain/          Elevator/Request aggregates, value objects, events, ISchedulingPolicy — no I/O
-application/     commands, queries, handlers, process manager, read models, repository
-                 interfaces (write and read side), ports, orchestrator
+domain/          Elevator/Request aggregates, value objects, events, ISchedulingPolicy,
+                 aggregate repository interfaces — no I/O
+application/     commands, queries, handlers, process manager, read models, read-side
+                 repository interfaces, ports, orchestrator
 infrastructure/  in-memory event store/bus/registry, event-sourced repositories, and the
                  projections (event-driven read-model writers) — swappable for a real DB
-composition/     DI container + per-layer registration modules (dependency-injector)
-api/             FastAPI app, routers, pydantic schemas — the only presentation layer
+api/             FastAPI app, routers, pydantic schemas, and the composition root that
+                 wires each layer's own DI container together — the only presentation layer
 tests/           mirrors the tree above
 ```
 

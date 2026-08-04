@@ -1,8 +1,8 @@
 from fastapi import Request
 
+from api.run_scope import RunScope
 from application.handlers.query import GetSimulationStatusHandler
 from application.ports import ISimulationRegistry
-from composition.run_scope import RunScope
 
 
 def get_run_scope(request: Request) -> RunScope:
