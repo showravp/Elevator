@@ -11,8 +11,7 @@ stats output).
 Status: core simulation and REST API are built and tested end-to-end — domain layer,
 event-sourcing infrastructure (store, outbox, repositories, dispatch process manager,
 projections, orchestrator), DI composition root, and a FastAPI service exposing it.
-`pyright --strict` and `ruff` both pass with zero errors — see [CLAUDE.md](CLAUDE.md) for
-the full architecture and build sequence.
+`pyright --strict` and `ruff` both pass with zero errors.
 
 ## Project layout
 
