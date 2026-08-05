@@ -21,6 +21,7 @@ Thumbs.db
 
 # Claude Code local settings (machine-specific, not shared context)
 .claude/settings.local.json
+CLAUDE.md
 
 # Local-only architecture notes (not part of the public deliverable)
 NOTES.md
